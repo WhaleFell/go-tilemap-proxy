@@ -27,6 +27,19 @@ var configPath string
 func init() {
 	// -c <config file path, default is ./config.yaml>
 	flag.StringVar(&configPath, "c", "config.yaml", "config file path")
+
+	flag.Usage = func() {
+		fmt.Printf("go-map-proxy version: %s, build time: %s\n", VERSION, BUILD_TIME)
+		flag.PrintDefaults()
+	}
+
+	flag.Parse()
+
+	if err := config.InitConfig(configPath); err != nil {
+		logger.Fatalf("init config failed: %v", err)
+	}
+
+	fmt.Printf("config: %+v\n", config.Cfg)
 }
 
 func StartServer() {
@@ -66,19 +79,6 @@ func StartServer() {
 }
 
 func main() {
-
-	flag.Usage = func() {
-		fmt.Printf("go-map-proxy version: %s, build time: %s\n", VERSION, BUILD_TIME)
-		flag.PrintDefaults()
-	}
-
-	flag.Parse()
-
-	if err := config.InitConfig(configPath); err != nil {
-		logger.Fatalf("init config failed: %v", err)
-	}
-
-	fmt.Printf("config: %+v\n", config.Cfg)
 
 	// init logger
 	logger.InitLogger(&logger.LoggerCfg{

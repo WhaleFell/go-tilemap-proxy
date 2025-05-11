@@ -12,6 +12,9 @@ export GO111MODULE=on
 
 go mod init go-map-proxy
 
+# check golang env
+go env
+
 # install dependencies
 go get github.com/labstack/echo/v4
 go get github.com/spf13/viper

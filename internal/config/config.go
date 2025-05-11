@@ -27,6 +27,7 @@ type Config struct {
 	Server ServerConfig `json:"server" yaml:"server"`
 	Cache  CacheConfig  `json:"cache" yaml:"cache"`
 	Log    LogConfig    `json:"log" yaml:"log"`
+	Proxy  string       `json:"proxy" yaml:"proxy"`
 }
 
 var Cfg *Config
@@ -47,6 +48,7 @@ func InitConfig(configPath string) error {
 	viper.SetDefault("log.level", "debug")
 	viper.SetDefault("log.file_path", "")
 	viper.SetDefault("log.enable_file", true)
+	viper.SetDefault("proxy", "")
 
 	// load config in environment variable
 	viper.AutomaticEnv()

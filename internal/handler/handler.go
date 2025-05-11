@@ -12,4 +12,9 @@ func RegisterHandlers(echo *echo.Echo) {
 
 	echo.GET("/", common.Index)
 	echo.GET("/health", common.HealthCheck)
+	echo.GET("/systemInfo", common.SystemInfo)
+
+	echo.Any("/proxy", common.URLProxy)
+
+	echo.HTTPErrorHandler = CustomGlobalHTTPErrorHandler
 }

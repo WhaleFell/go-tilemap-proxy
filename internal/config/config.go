@@ -14,7 +14,9 @@ type ServerConfig struct {
 }
 
 type CacheConfig struct {
-	Path string `json:"path" yaml:"path"`
+	Enable bool   `json:"enable" yaml:"enable"`
+	Path   string `json:"path" yaml:"path"`
+	MaxAge int    `json:"max_age" yaml:"max_age"`
 }
 
 type LogConfig struct {
@@ -41,13 +43,21 @@ func InitConfig(configPath string) error {
 	// viper.SetConfigType("toml")
 	// viper.SetConfigFile("env")
 
-	// set default config
+	// set default server config
 	viper.SetDefault("server.host", "0.0.0.0")
 	viper.SetDefault("server.port", 8076)
+
+	// set default cache config
 	viper.SetDefault("cache.path", "./cache")
+	viper.SetDefault("cache.enable", true)
+	viper.SetDefault("cache.max_age", 3600)
+
+	// set default log config
 	viper.SetDefault("log.level", "debug")
 	viper.SetDefault("log.file_path", "")
 	viper.SetDefault("log.enable_file", true)
+
+	// set default proxy config
 	viper.SetDefault("proxy", "")
 
 	// load config in environment variable
@@ -63,7 +73,7 @@ func InitConfig(configPath string) error {
 		return fmt.Errorf("open config file %s failed: %w, create default config now", configPath, err)
 	}
 
-	// get file extension name
+	// get file extension name and set config type
 	ext := filepath.Ext(configPath)
 	viper.SetConfigType(ext[1:])
 

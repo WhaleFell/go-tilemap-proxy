@@ -2,6 +2,7 @@ package handler
 
 import (
 	"go-map-proxy/internal/handler/common"
+	"go-map-proxy/internal/handler/tilemap"
 
 	"github.com/labstack/echo/v4"
 )
@@ -15,6 +16,12 @@ func RegisterHandlers(echo *echo.Echo) {
 	echo.GET("/systemInfo", common.SystemInfo)
 
 	echo.Any("/proxy", common.URLProxy)
+
+	// tile map server
+
+	tilemapGroup := echo.Group("/map")
+	tilemapGroup.GET("/list", tilemap.TileMapSourceList)
+	tilemapGroup.Any("/:mapType/:x/:y/:z", tilemap.TileMapHandler)
 
 	echo.HTTPErrorHandler = CustomGlobalHTTPErrorHandler
 }

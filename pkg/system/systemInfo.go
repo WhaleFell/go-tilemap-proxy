@@ -21,6 +21,7 @@ type SystemInfo struct {
 	GoVersion      string `json:"go_version"`
 	ExecutablePath string `json:"executorPath"`
 	ExecutableDir  string `json:"executableDir"`
+	WorkingDir     string `json:"workingDir"`
 
 	CPU struct {
 		Type        string  `json:"type"`
@@ -51,6 +52,12 @@ func GetSystemInfo() (*SystemInfo, error) {
 	}
 	systemInfo.ExecutablePath = exePath
 	systemInfo.ExecutableDir = filepath.Dir(exePath)
+	// get working dir
+	workingDir, err := os.Getwd()
+	if err != nil {
+		fmt.Println("get working dir error:", err)
+	}
+	systemInfo.WorkingDir = workingDir
 
 	// CPU
 

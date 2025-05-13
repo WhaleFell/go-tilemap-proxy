@@ -9,6 +9,8 @@ import (
 )
 
 func CustomGlobalHTTPErrorHandler(err error, c echo.Context) {
+	// Check if the response has already been committed
+	// If it has, we will skip the error handling
 	if c.Response().Committed {
 		return
 	}

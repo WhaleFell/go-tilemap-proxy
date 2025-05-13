@@ -7,6 +7,7 @@ import (
 	"go-map-proxy/internal/config"
 	"go-map-proxy/internal/handler"
 	"go-map-proxy/internal/middleware"
+	"go-map-proxy/internal/utils"
 	"go-map-proxy/pkg/logger"
 	"net/http"
 	"os"
@@ -38,6 +39,9 @@ func init() {
 	if err := config.InitConfig(configPath); err != nil {
 		logger.Fatalf("init config failed: %v", err)
 	}
+
+	// init map cache
+	utils.InitMapCache(config.Cfg.Cache.Path)
 
 	fmt.Printf("config: %+v\n", config.Cfg)
 }

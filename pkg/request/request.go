@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 )
 
@@ -22,6 +23,11 @@ type HTTPClientConfig struct {
 	// follow 302 redirect
 	FollowDirect bool
 }
+
+var (
+	DefaultHTTPClient         *http.Client
+	InitDefaultHTTPClientOnce sync.Once
+)
 
 var defaultUserAgent = "Mozilla/5.0 (Linux; Android 10; Pixel 3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.181 Mobile Safari/537.36"
 
@@ -93,6 +99,18 @@ func NewHTTPClient(config *HTTPClientConfig) *http.Client {
 
 	return HTTPClient
 
+}
+
+func GetDefaultHTTPClient() *http.Client {
+	InitDefaultHTTPClientOnce.Do(func() {
+		DefaultHTTPClient = NewHTTPClient(&HTTPClientConfig{
+			Timeout:      10 * time.Second,
+			Proxy:        "",
+			FollowDirect: true,
+		})
+	})
+
+	return DefaultHTTPClient
 }
 
 func NewHTTPRequest(method, url string, body io.Reader, useragent ...string) (*http.Request, error) {

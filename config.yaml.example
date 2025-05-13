@@ -1,0 +1,12 @@
+cache:
+    enable: true
+    max_age: 3600
+    path: ./cache
+log:
+    enable_file: true
+    file_path: ""
+    level: debug
+proxy: ""
+server:
+    host: 0.0.0.0
+    port: 8076

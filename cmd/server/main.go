@@ -43,6 +43,13 @@ func init() {
 	// init map cache
 	utils.InitMapCache(config.Cfg.Cache.Path)
 
+	// init logger
+	logger.InitLogger(&logger.LoggerCfg{
+		EnableFile: config.Cfg.Log.EnableFile,
+		LogLevel:   config.Cfg.Log.Level,
+		LogPath:    config.Cfg.Log.FilePath,
+	})
+
 	fmt.Printf("config: %+v\n", config.Cfg)
 }
 
@@ -84,13 +91,6 @@ func StartServer() {
 }
 
 func main() {
-
-	// init logger
-	logger.InitLogger(&logger.LoggerCfg{
-		LogLevel:   config.Cfg.Log.Level,
-		EnableFile: config.Cfg.Log.EnableFile,
-		LogPath:    config.Cfg.Log.FilePath,
-	})
 
 	// start server
 	StartServer()

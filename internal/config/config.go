@@ -8,28 +8,30 @@ import (
 	"github.com/spf13/viper"
 )
 
+// ref: https://github.com/spf13/viper?tab=readme-ov-file#unmarshaling
+
 type ServerConfig struct {
-	Host string `json:"host" yaml:"host"`
-	Port int    `json:"port" yaml:"port"`
+	Host string `json:"host" yaml:"host" mapstructure:"host"`
+	Port int    `json:"port" yaml:"port" mapstructure:"port" `
 }
 
 type CacheConfig struct {
-	Enable bool   `json:"enable" yaml:"enable"`
-	Path   string `json:"path" yaml:"path"`
-	MaxAge int    `json:"max_age" yaml:"max_age"`
+	Enable bool   `json:"enable" yaml:"enable" mapstructure:"enable"`
+	Path   string `json:"path" yaml:"path" mapstructure:"path"`
+	MaxAge int    `json:"max_age" yaml:"max_age" mapstructure:"max_age"`
 }
 
 type LogConfig struct {
-	Level      string `json:"level" yaml:"level"`
-	EnableFile bool   `json:"enable_file" yaml:"enable_file"`
-	FilePath   string `json:"file_path" yaml:"file_path"`
+	Level      string `json:"level" yaml:"level" mapstructure:"level"`
+	EnableFile bool   `json:"enable_file" yaml:"enable_file" mapstructure:"enable_file"`
+	FilePath   string `json:"file_path" yaml:"file_path" mapstructure:"file_path"`
 }
 
 type Config struct {
-	Server ServerConfig `json:"server" yaml:"server"`
-	Cache  CacheConfig  `json:"cache" yaml:"cache"`
-	Log    LogConfig    `json:"log" yaml:"log"`
-	Proxy  string       `json:"proxy" yaml:"proxy"`
+	Server ServerConfig `json:"server" yaml:"server" mapstructure:"server"`
+	Cache  CacheConfig  `json:"cache" yaml:"cache" mapstructure:"cache"`
+	Log    LogConfig    `json:"log" yaml:"log" mapstructure:"log"`
+	Proxy  string       `json:"proxy" yaml:"proxy" mapstructure:"proxy"`
 }
 
 var Cfg *Config
@@ -54,8 +56,8 @@ func InitConfig(configPath string) error {
 
 	// set default log config
 	viper.SetDefault("log.level", "debug")
-	viper.SetDefault("log.file_path", "")
 	viper.SetDefault("log.enable_file", true)
+	viper.SetDefault("log.file_path", "")
 
 	// set default proxy config
 	viper.SetDefault("proxy", "")

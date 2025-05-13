@@ -12,4 +12,6 @@ var MapSourceList = map[string]TileMapProvider{
 	"bingSatellite":      BingSateliteMap,
 	"googleHybridOffset": GoogleHybridOffsetMap,
 	"cyclosm":            OpenStreetMapCyclOSM,
+	"amapRoad":           AmapRoadMap,
+	"tiandituSatellite":  TianDiTuSatellite,
 }

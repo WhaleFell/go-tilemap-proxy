@@ -29,6 +29,9 @@ go run ./cmd/server
 go build -o go-map-proxy ./cmd/server
 
 
+# build with optimization
+go build -o ./bin/server.exe -trimpath -buildvcs=false -ldflags="-s -w -buildid= -checklinkname=0" -v ./cmd/server
+
 ```
 
 ## Reference

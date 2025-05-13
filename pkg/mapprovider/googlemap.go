@@ -111,3 +111,13 @@ var GoogleHybridOffsetMap = &GoogleMapProvider{
 	CoordinateType: "WGJ84",
 	BaseURL:        "https://khms${serverpart}.google.com/kh/v=979?x=${x}&y=${y}&z=${z}",
 }
+
+// 天地图
+// ref: https://www.tianditu.gov.cn/
+// Use CGCS2000 coordinate system, it is the same as WGS84, but has a cm level offset.
+var TianDiTuSatellite = &GoogleMapProvider{
+	Name:           "TianDiTu Satellite 天地图卫星影像",
+	CoordinateType: "CGCS2000",
+	BaseURL:        "https://t0.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}&tk=75f0434f240669f4a2df6359275146d2",
+	ReferenceURL:   "https://map.tianditu.gov.cn/",
+}

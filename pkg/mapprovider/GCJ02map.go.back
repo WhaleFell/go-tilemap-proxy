@@ -1,0 +1,133 @@
+// GCJ02 coordinate tile map covert to WGS84 tile map
+
+package mapprovider
+
+import (
+	"fmt"
+	"go-map-proxy/pkg/logger"
+	"go-map-proxy/pkg/request"
+	"math"
+	"net/http"
+	"strconv"
+	"strings"
+)
+
+// Convert tile (x, y, z) to top-left corner's WGS84 longitude and latitude
+func tileXYToLonLat(x, y, z int) (lon, lat float64) {
+	n := math.Pow(2, float64(z))
+	lon = float64(x)/n*360.0 - 180.0
+	latRad := math.Atan(math.Sinh(math.Pi * (1 - 2*float64(y)/n)))
+	lat = latRad * 180.0 / math.Pi
+	return
+}
+
+// Convert WGS84 to GCJ02 (Mars coordinate system)
+func wgs84ToGCJ02(wgsLat, wgsLon float64) (gcjLat, gcjLon float64) {
+	dLat := transformLat(wgsLon-105.0, wgsLat-35.0)
+	dLon := transformLon(wgsLon-105.0, wgsLat-35.0)
+	radLat := wgsLat / 180.0 * math.Pi
+	magic := math.Sin(radLat)
+	magic = 1 - 0.00669342162296594323*magic*magic
+	sqrtMagic := math.Sqrt(magic)
+	dLat = (dLat * 180.0) / ((6378245.0 * (1 - 0.00669342162296594323)) / (magic * sqrtMagic) * math.Pi)
+	dLon = (dLon * 180.0) / (6378245.0 / sqrtMagic * math.Cos(radLat) * math.Pi)
+	gcjLat = wgsLat + dLat
+	gcjLon = wgsLon + dLon
+	return
+}
+
+// Latitude offset for GCJ-02 conversion
+func transformLat(x, y float64) float64 {
+	ret := -100.0 + 2.0*x + 3.0*y + 0.2*y*y + 0.1*x*y + 0.2*math.Sqrt(math.Abs(x))
+	ret += (20.0*math.Sin(6.0*x*math.Pi) + 20.0*math.Sin(2.0*x*math.Pi)) * 2.0 / 3.0
+	ret += (20.0*math.Sin(y*math.Pi) + 40.0*math.Sin(y/3.0*math.Pi)) * 2.0 / 3.0
+	ret += (160.0*math.Sin(y/12.0*math.Pi) + 320*math.Sin(y*math.Pi/30.0)) * 2.0 / 3.0
+	return ret
+}
+
+// Longitude offset for GCJ-02 conversion
+func transformLon(x, y float64) float64 {
+	ret := 300.0 + x + 2.0*y + 0.1*x*x + 0.1*x*y + 0.1*math.Sqrt(math.Abs(x))
+	ret += (20.0*math.Sin(6.0*x*math.Pi) + 20.0*math.Sin(2.0*x*math.Pi)) * 2.0 / 3.0
+	ret += (20.0*math.Sin(x*math.Pi) + 40.0*math.Sin(x/3.0*math.Pi)) * 2.0 / 3.0
+	ret += (150.0*math.Sin(x/12.0*math.Pi) + 300.0*math.Sin(x/30.0*math.Pi)) * 2.0 / 3.0
+	return ret
+}
+
+// Convert GCJ02 longitude and latitude to tile x, y at zoom level z
+func lonLatToTileXY(lon, lat float64, z int) (x, y int) {
+	n := math.Pow(2, float64(z))
+	x = int((lon + 180.0) / 360.0 * n)
+	latRad := lat * math.Pi / 180.0
+	y = int((1.0 - math.Log(math.Tan(latRad)+1.0/math.Cos(latRad))/math.Pi) / 2.0 * n)
+	return
+}
+
+// Main function: Convert WGS84 tile (x, y, z) to GCJ02 tile (x, y, z)
+func wgs84TileToGCJ02Tile(x, y, z int) (int, int, int) {
+	// Step 1: Get WGS84 lon/lat of tile's top-left corner
+	lon, lat := tileXYToLonLat(x, y, z)
+
+	// Step 2: Convert to GCJ-02 coordinates
+	gcjLat, gcjLon := wgs84ToGCJ02(lat, lon)
+
+	// Step 3: Convert GCJ-02 coordinates back to tile index
+	gcjX, gcjY := lonLatToTileXY(gcjLon, gcjLat, z)
+	return gcjX, gcjY, z
+}
+
+type GCJ02MapProvider struct {
+	Name           string
+	BaseURL        string
+	ReferenceURL   string
+	CoordinateType string
+}
+
+func (gcjmap *GCJ02MapProvider) GetMapName() string {
+	return gcjmap.Name
+}
+
+func (gcjmap *GCJ02MapProvider) GetMapPic(x, y, z int) (*http.Response, error) {
+	httpClient := request.GetDefaultHTTPClient()
+	mapUrl := gcjmap.BaseURL
+	gcj02x, gcj02y, gcj02z := wgs84TileToGCJ02Tile(x, y, z)
+
+	logger.Debugf("GCJ02MapProvider: x=%d, y=%d, z=%d, gcj02x=%d, gcj02y=%d, gcj02z=%d", x, y, z, gcj02x, gcj02y, gcj02z)
+
+	mapUrl = strings.Replace(mapUrl, "{x}", strconv.Itoa(gcj02x), 1) // Replace {x} with the actual x value
+	mapUrl = strings.Replace(mapUrl, "{y}", strconv.Itoa(gcj02y), 1) // Replace {y} with the actual y value
+	mapUrl = strings.Replace(mapUrl, "{z}", strconv.Itoa(gcj02z), 1) // Replace {z} with the actual z value
+
+	// Make a GET request to the map URL
+	request, err := http.NewRequest(http.MethodGet, mapUrl, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
+
+	if gcjmap.ReferenceURL != "" {
+		request.Header.Set("Referer", gcjmap.ReferenceURL)
+	} else {
+		request.Header.Set("Referer", "https://www.openstreetmap.org/")
+	}
+
+	response, err := httpClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to get map tile, status code: %d", response.StatusCode)
+	}
+
+	return response, nil
+
+}
+
+var AmapRoadMap = &GCJ02MapProvider{
+	Name:           "Amap Road Map 高德路网",
+	BaseURL:        "https://webst01.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}",
+	ReferenceURL:   "https://www.amap.com/",
+	CoordinateType: "GCJ02",
+}

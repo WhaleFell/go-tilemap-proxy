@@ -69,6 +69,7 @@ func StartServer() {
 		if err := e.Start(address); err != nil && err != http.ErrServerClosed {
 			e.Logger.Fatal("shutting down the server")
 		}
+		stop()
 	}()
 
 	// wait for interrupt signal to gracefully shut down the server with a timeout of 10 seconds.

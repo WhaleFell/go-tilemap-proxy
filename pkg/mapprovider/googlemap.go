@@ -9,6 +9,9 @@ import (
 	"strings"
 )
 
+// ref:
+// 1. https://wiki.openstreetmap.org/wiki/Raster_tile_providers
+
 type GoogleMapProvider struct {
 	Name string
 
@@ -20,6 +23,8 @@ type GoogleMapProvider struct {
 	// GCJ02: China geodetic coordinate system (国测局 02 坐标系)
 	// BD09: Baidu coordinate system (百度坐标系)
 	CoordinateType string
+
+	ReferenceURL string
 }
 
 func (gmp *GoogleMapProvider) GetMapName() string {
@@ -43,6 +48,12 @@ func (gmp *GoogleMapProvider) GetMapPic(x, y, z int) (*http.Response, error) {
 
 	request.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
 
+	if gmp.ReferenceURL != "" {
+		request.Header.Set("Referer", gmp.ReferenceURL)
+	} else {
+		request.Header.Set("Referer", "https://www.openstreetmap.org/")
+	}
+
 	response, err := httpClient.Do(request)
 	if err != nil {
 		return nil, err
@@ -65,4 +76,38 @@ var GmapPureSatellite2 = &GoogleMapProvider{
 	Name:           "Google Pure Satellite 2",
 	CoordinateType: "WGJ84",
 	BaseURL:        "https://khms{serverpart}.google.com/kh/v=979?x={x}&y={y}&z={z}",
+}
+
+var OpenStreetMapStandard = &GoogleMapProvider{
+	Name:           "OpenStreetMap Standard",
+	CoordinateType: "WGJ84",
+	BaseURL:        "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+}
+
+var OpenStreetMapPublicGPS = &GoogleMapProvider{
+	Name:           "OpenStreetMap Public GPS",
+	CoordinateType: "WGJ84",
+	BaseURL:        "https://gps.tile.openstreetmap.org/lines/{z}/{x}/{y}.png",
+}
+
+// TraceStrack Topo Map
+// Note that the tile photo pixel size is 512x512
+var TraceStrackTopoMap = &GoogleMapProvider{
+	Name:           "TraceStrack Topo Map",
+	CoordinateType: "WGJ84",
+	BaseURL:        "https://tile.tracestrack.com/topo__/{z}/{x}/{y}.png?key=383118983d4a867dd2d367451720d724",
+	ReferenceURL:   "https://www.openstreetmap.org/",
+}
+
+// Arcgis Satelite
+var ArcgisSatelite = &GoogleMapProvider{
+	Name:           "Arcgis Satelite",
+	CoordinateType: "WGJ84",
+	ReferenceURL:   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+}
+
+var GoogleHybridOffsetMap = &GoogleMapProvider{
+	Name:           "Google Hybrid Offset Map",
+	CoordinateType: "WGJ84",
+	BaseURL:        "https://khms${serverpart}.google.com/kh/v=979?x=${x}&y=${y}&z=${z}",
 }

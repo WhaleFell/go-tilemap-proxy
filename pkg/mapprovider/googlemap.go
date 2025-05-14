@@ -103,7 +103,8 @@ var TraceStrackTopoMap = &GoogleMapProvider{
 var ArcgisSatelite = &GoogleMapProvider{
 	Name:           "Arcgis Satelite",
 	CoordinateType: "WGJ84",
-	ReferenceURL:   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+	BaseURL:        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+	ReferenceURL:   "https://www.arcgis.com/home/webmap/viewer.html?webmap=0c4f2a1b8d5e4f3b8c7e6f3b8c7e6f3b",
 }
 
 var GoogleHybridOffsetMap = &GoogleMapProvider{

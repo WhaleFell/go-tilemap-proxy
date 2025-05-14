@@ -2,34 +2,20 @@ package common
 
 import (
 	"fmt"
-	"go-map-proxy/internal/config"
 	"go-map-proxy/internal/model"
 	"go-map-proxy/pkg/request"
 	"io"
 	"net/http"
 	"net/url"
-	"sync"
-	"time"
 
 	"github.com/labstack/echo/v4"
-)
-
-var (
-	HTTPClient     *http.Client
-	initClientOnce sync.Once
 )
 
 // proxy url
 // http://example.com/proxy?url=http://example.com
 func URLProxy(c echo.Context) error {
 	// init http client
-	initClientOnce.Do(func() {
-		HTTPClient = request.NewHTTPClient(&request.HTTPClientConfig{
-			Timeout:      10 * time.Second,
-			Proxy:        config.Cfg.Proxy,
-			FollowDirect: true,
-		})
-	})
+	HTTPClient := request.DefaultHTTPClient
 
 	proxyUrl := c.QueryParam("url")
 	if proxyUrl == "" {

@@ -9,6 +9,7 @@ import (
 	"go-map-proxy/internal/middleware"
 	"go-map-proxy/internal/utils"
 	"go-map-proxy/pkg/logger"
+	"go-map-proxy/pkg/request"
 	"net/http"
 	"os"
 	"os/signal"
@@ -48,6 +49,13 @@ func init() {
 		EnableFile: config.Cfg.Log.EnableFile,
 		LogLevel:   config.Cfg.Log.Level,
 		LogPath:    config.Cfg.Log.FilePath,
+	})
+
+	// init http default client
+	request.InitDefaultHTTPClient(&request.HTTPClientConfig{
+		Timeout:      time.Duration(config.Cfg.HTTPClient.Timeout) * time.Second,
+		Proxy:        config.Cfg.HTTPClient.Proxy,
+		FollowDirect: true,
 	})
 
 	fmt.Printf("config: %+v\n", config.Cfg)

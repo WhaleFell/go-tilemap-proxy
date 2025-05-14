@@ -32,7 +32,7 @@ func (cosm *CyclosmMapProvider) GetMapName() string {
 }
 
 func (cosm *CyclosmMapProvider) GetMapPic(x, y, z int) (*http.Response, error) {
-	httpClient := request.GetDefaultHTTPClient()
+	httpClient := request.DefaultHTTPClient
 	mapUrl := cosm.BaseURL
 	mapUrl = strings.Replace(mapUrl, "{x}", strconv.Itoa(x), 1) // Replace {x} with the actual x value
 	mapUrl = strings.Replace(mapUrl, "{y}", strconv.Itoa(y), 1) // Replace {y} with the actual y value

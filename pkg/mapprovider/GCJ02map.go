@@ -91,7 +91,7 @@ func (gcjmap *GCJ02MapProvider) GetMapName() string {
 }
 
 func (gcjmap *GCJ02MapProvider) GetMapPic(x, y, z int) (*http.Response, error) {
-	httpClient := request.GetDefaultHTTPClient()
+	httpClient := request.DefaultHTTPClient
 
 	// Create destination tile image
 	tile := image.NewRGBA(image.Rect(0, 0, 256, 256))

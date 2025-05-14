@@ -39,7 +39,7 @@ func xyzToQuadkey(x, y, zoom int) string {
 }
 
 func (qmp *QuadTreeMapProvider) GetMapPic(x, y, z int) (*http.Response, error) {
-	httpClient := request.GetDefaultHTTPClient()
+	httpClient := request.DefaultHTTPClient
 	quadkey := xyzToQuadkey(x, y, z)
 	mapUrl := strings.Replace(qmp.BaseURL, "{quadkey}", quadkey, 1)
 

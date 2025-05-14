@@ -27,11 +27,16 @@ type LogConfig struct {
 	FilePath   string `json:"file_path" yaml:"file_path" mapstructure:"file_path"`
 }
 
+type HTTPClientConfig struct {
+	Timeout int    `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
+	Proxy   string `json:"proxy" yaml:"proxy" mapstructure:"proxy"`
+}
+
 type Config struct {
-	Server ServerConfig `json:"server" yaml:"server" mapstructure:"server"`
-	Cache  CacheConfig  `json:"cache" yaml:"cache" mapstructure:"cache"`
-	Log    LogConfig    `json:"log" yaml:"log" mapstructure:"log"`
-	Proxy  string       `json:"proxy" yaml:"proxy" mapstructure:"proxy"`
+	Server     ServerConfig     `json:"server" yaml:"server" mapstructure:"server"`
+	Cache      CacheConfig      `json:"cache" yaml:"cache" mapstructure:"cache"`
+	Log        LogConfig        `json:"log" yaml:"log" mapstructure:"log"`
+	HTTPClient HTTPClientConfig `json:"http_client" yaml:"http_client" mapstructure:"http_client"`
 }
 
 var Cfg *Config
@@ -56,11 +61,12 @@ func InitConfig(configPath string) error {
 
 	// set default log config
 	viper.SetDefault("log.level", "debug")
-	viper.SetDefault("log.enable_file", true)
+	viper.SetDefault("log.enable_file", false)
 	viper.SetDefault("log.file_path", "")
 
-	// set default proxy config
-	viper.SetDefault("proxy", "")
+	// set default http client config
+	viper.SetDefault("http_client.timeout", 10)
+	viper.SetDefault("http_client.proxy", "")
 
 	// load config in environment variable
 	viper.AutomaticEnv()

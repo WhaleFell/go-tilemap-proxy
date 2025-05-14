@@ -25,7 +25,12 @@ type HTTPClientConfig struct {
 }
 
 var (
-	DefaultHTTPClient         *http.Client
+	DefaultHTTPClient *http.Client = NewHTTPClient(&HTTPClientConfig{
+		Timeout:      10 * time.Second,
+		Proxy:        "",
+		FollowDirect: true,
+	})
+
 	InitDefaultHTTPClientOnce sync.Once
 )
 
@@ -101,13 +106,9 @@ func NewHTTPClient(config *HTTPClientConfig) *http.Client {
 
 }
 
-func GetDefaultHTTPClient() *http.Client {
+func InitDefaultHTTPClient(cfg *HTTPClientConfig) *http.Client {
 	InitDefaultHTTPClientOnce.Do(func() {
-		DefaultHTTPClient = NewHTTPClient(&HTTPClientConfig{
-			Timeout:      10 * time.Second,
-			Proxy:        "",
-			FollowDirect: true,
-		})
+		DefaultHTTPClient = NewHTTPClient(cfg)
 	})
 
 	return DefaultHTTPClient

@@ -1,12 +1,14 @@
 cache:
-    enable: true
-    max_age: 3600
-    path: ./cache
+  enable: true
+  max_age: 3800
+  path: ./cache
+http_client:
+  proxy: "socks5://127.0.0.1:10808"
+  timeout: 10
 log:
-    enable_file: true
-    file_path: ""
-    level: debug
-proxy: ""
+  enable_file: false
+  file_path: ""
+  level: debug
 server:
-    host: 0.0.0.0
-    port: 8076
+  host: 0.0.0.0
+  port: 8076

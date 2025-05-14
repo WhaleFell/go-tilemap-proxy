@@ -2,6 +2,7 @@ package tilemap
 
 import (
 	"fmt"
+	"go-map-proxy/assets"
 	"go-map-proxy/internal/config"
 	"go-map-proxy/internal/model"
 	"go-map-proxy/internal/utils"
@@ -80,25 +81,22 @@ func TileMapHandler(c echo.Context) error {
 	if isUseCache {
 		// check if tile map picture is in cache
 		if cacheData, err := utils.Cache.GetCache(cacheKey); err == nil {
-			// if cache data is not empty, return it
-			if len(cacheData) > 0 {
-				logger.Debugf("Tile map cache hit: %s", cacheKey)
-				c.Response().Header().Set(echo.HeaderContentType, "image/png")
-				c.Response().Header().Set(echo.HeaderContentLength, fmt.Sprintf("%d", len(cacheData)))
-				// set cache policy
-				c.Response().Header().Set(echo.HeaderCacheControl, fmt.Sprintf("max-age=%d", config.Cfg.Cache.MaxAge))
-				c.Response().Header().Set("X-cache", "HIT")
-				c.Response().WriteHeader(200)
-				_, err = c.Response().Writer.Write(cacheData)
-				if err != nil {
-					return c.JSON(200, model.BaseAPIResponse[any]{
-						Code:    500,
-						Message: fmt.Sprintf("Write tile map picture error: %v", err),
-						Data:    nil,
-					})
-				}
-				return nil
+			logger.Debugf("Tile map cache hit: %s", cacheKey)
+			c.Response().Header().Set(echo.HeaderContentType, "image/png")
+			c.Response().Header().Set(echo.HeaderContentLength, fmt.Sprintf("%d", len(cacheData)))
+			// set cache policy
+			c.Response().Header().Set(echo.HeaderCacheControl, fmt.Sprintf("max-age=%d", config.Cfg.Cache.MaxAge))
+			c.Response().Header().Set("X-cache", "HIT")
+			c.Response().WriteHeader(200)
+			_, err = c.Response().Writer.Write(cacheData)
+			if err != nil {
+				return c.JSON(200, model.BaseAPIResponse[any]{
+					Code:    500,
+					Message: fmt.Sprintf("Write tile map picture error: %v", err),
+					Data:    nil,
+				})
 			}
+			return nil
 		}
 		c.Response().Header().Set("X-cache", "MISS")
 		logger.Debugf("Tile map cache miss: %s", cacheKey)
@@ -147,6 +145,11 @@ func TileMapHandler(c echo.Context) error {
 			logger.Debugf("Set tile map cache success: %s", cacheKey)
 		}
 	}()
+
+	// if picBytes is empty, return failure picture
+	if len(picBytes) == 0 {
+		return c.Blob(200, "image/png", assets.TileMapFailedPng)
+	}
 
 	// set content length
 	c.Response().Header().Set(echo.HeaderContentLength, fmt.Sprintf("%d", len(picBytes)))

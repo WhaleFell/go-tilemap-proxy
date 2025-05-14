@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"go-map-proxy/pkg/logger"
 	"os"
 	"path/filepath"
 	"sync"
@@ -75,6 +76,11 @@ func (mapcache *MapCache) getCachePath(key string) (string, error) {
 
 // SetCache: save the data to the cache path, according to the hash value of the key
 func (mapcache *MapCache) SetCache(keyStr string, value []byte) error {
+	// check if the value is empty
+	if len(value) == 0 {
+		return fmt.Errorf("value is empty, nothing to cache")
+	}
+
 	// key e.g. 6f1ed002ab5595859014ebf0951522d9
 	key := mapcache.GenerateCacheKey(keyStr)
 
@@ -112,7 +118,13 @@ func (mapcache *MapCache) GetCache(keyStr string) ([]byte, error) {
 	// read the value from the cache file
 	value, err := os.ReadFile(cacheFilePath)
 	if err != nil {
+		logger.Debugf("read cache file %s failed: %v", cacheFilePath, err)
 		return nil, fmt.Errorf("read cache file %s failed: %w", cacheFilePath, err)
+	}
+
+	// check if the value is empty
+	if len(value) == 0 {
+		return nil, fmt.Errorf("cache file %s is empty", cacheFilePath)
 	}
 
 	return value, nil

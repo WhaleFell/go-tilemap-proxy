@@ -3,7 +3,6 @@ module go-map-proxy
 go 1.23.5
 
 require (
-	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/labstack/gommon v0.4.2
 	github.com/shirou/gopsutil v3.21.11+incompatible

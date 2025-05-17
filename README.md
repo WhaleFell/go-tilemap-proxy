@@ -44,14 +44,17 @@ docker build \
   --build-arg HTTP_PROXY=http://172.23.0.1:10808 \
   --build-arg HTTPS_PROXY=http://172.23.0.1:10808 \
   -f ./Dockerfile \
-  -t whalefell/map-server:0.0.1 .
+  -t whalefell/map-server:test .
+
+# test run
+docker run -it --rm whalefell/map-server:test bash
 
 # set tag to latest
-docker tag whalefell/map-server:0.0.1 whalefell/map-server:latest
+docker tag whalefell/map-server:test whalefell/map-server:latest
 
 # push to docker hub
 docker push whalefell/map-server:latest
-docker push whalefell/map-server:0.0.1
+docker push whalefell/map-server:test
 
 # run docker container
 docker run -d \

@@ -30,28 +30,57 @@ COPY . .
 
 RUN go build -o ./bin/map-server -trimpath -buildvcs=false -ldflags="-s -w -buildid= -checklinkname=0" -v ./cmd/server
 
+# ============================================================
+# Use Debian as the base image for the final stage
+# # Final stage: Run the application
+# FROM debian:bookworm-slim
+
+# WORKDIR /app
+
+# # Create a non-root user and group
+# # RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# # Copy the built application
+# COPY --from=builder /app/bin/map-server ./map-server
+
+# # Install curl for healthcheck
+# RUN set -x && apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# # Change ownership of the application binary
+# # RUN chown appuser:appuser /app/main
+
+# # Switch to the non-root user
+# # USER appuser
+
+# # healthcheck
+# # HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+# #   CMD curl -f http://localhost:8080/health || exit 1
+
+# CMD ["./map-server", "-c", "./config/config.yaml"]
+# ============================================================
+
+# ============================================================
+# Use Alpine as the base image for the final stage
 # Final stage: Run the application
-FROM debian:bookworm-slim
+FROM alpine:latest
 
 WORKDIR /app
 
-# Create a non-root user and group
-# RUN groupadd -r appuser && useradd -r -g appuser appuser
+# # Create a non-root user and group
+# RUN addgroup -S appuser && adduser -S appuser -G appuser
+
+# Install curl for healthcheck
+RUN apk update && apk add --no-cache curl bash libc6-compat
 
 # Copy the built application
 COPY --from=builder /app/bin/map-server ./map-server
+RUN chmod +x ./map-server
 
-# Install curl for healthcheck
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
-
-# Change ownership of the application binary
+# # Change ownership of the application binary
 # RUN chown appuser:appuser /app/main
 
-# Switch to the non-root user
+# # Switch to the non-root user
 # USER appuser
 
-# healthcheck
-# HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-#   CMD curl -f http://localhost:8080/health || exit 1
-
 CMD ["./map-server", "-c", "./config/config.yaml"]
+# ============================================================

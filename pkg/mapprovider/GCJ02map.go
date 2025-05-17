@@ -63,6 +63,7 @@ func wgs84ToGCJ02(wgsLat, wgsLon float64) (gcjLat, gcjLon float64) {
 	return
 }
 
+// latitude offset calculation (GCJ02 encrypted)
 func transformLat(x, y float64) float64 {
 	ret := -100.0 + 2.0*x + 3.0*y + 0.2*y*y + 0.1*x*y + 0.2*math.Sqrt(math.Abs(x))
 	ret += (20.0*math.Sin(6.0*x*math.Pi) + 20.0*math.Sin(2.0*x*math.Pi)) * 2.0 / 3.0
@@ -71,12 +72,38 @@ func transformLat(x, y float64) float64 {
 	return ret
 }
 
+// longitude offset calculation (GCJ02 encrypted)
 func transformLon(x, y float64) float64 {
 	ret := 300.0 + x + 2.0*y + 0.1*x*x + 0.1*x*y + 0.1*math.Sqrt(math.Abs(x))
 	ret += (20.0*math.Sin(6.0*x*math.Pi) + 20.0*math.Sin(2.0*x*math.Pi)) * 2.0 / 3.0
 	ret += (20.0*math.Sin(x*math.Pi) + 40.0*math.Sin(x/3.0*math.Pi)) * 2.0 / 3.0
 	ret += (150.0*math.Sin(x/12.0*math.Pi) + 300.0*math.Sin(x/30.0*math.Pi)) * 2.0 / 3.0
 	return ret
+}
+
+// Check if the coordinate is in mainland China (excluding Hong Kong, Macau, and Taiwan)
+func isInMainlandChina(lat, lon float64) bool {
+	// Mainland China coordinate range
+	if lon < 73.675379 || lon > 135.026311 || lat < 18.197701 || lat > 53.458804 {
+		return false
+	}
+
+	// exclude Taiwan
+	if lon >= 119.0 && lon <= 123.0 && lat >= 21.5 && lat <= 25.5 {
+		return false
+	}
+
+	// exclude Hong Kong
+	// if lon >= 113.8 && lon <= 114.4 && lat >= 22.2 && lat <= 22.6 {
+	// 	return false
+	// }
+
+	// exclude Macau
+	// if lon >= 113.5 && lon <= 113.6 && lat >= 22.1 && lat <= 22.3 {
+	// 	return false
+	// }
+
+	return true
 }
 
 type GCJ02MapProvider struct {
@@ -92,6 +119,30 @@ func (gcjmap *GCJ02MapProvider) GetMapName() string {
 
 func (gcjmap *GCJ02MapProvider) GetMapPic(x, y, z int) (*http.Response, error) {
 	httpClient := request.DefaultHTTPClient
+
+	wgsLonTopLeft, wgsLatTopLeft := pixelXYToLonLat(x*256, y*256, z)
+	wgsLonBottomRight, wgsLatBottomRight := pixelXYToLonLat((x+1)*256-1, (y+1)*256-1, z)
+
+	// Check if the tile is outside China
+	if !isInMainlandChina(wgsLatTopLeft, wgsLonTopLeft) && !isInMainlandChina(wgsLatBottomRight, wgsLonBottomRight) {
+		// if the tile is outside China, return the original tile directly
+		url := strings.Replace(gcjmap.BaseURL, "{x}", strconv.Itoa(x), 1)
+		url = strings.Replace(url, "{y}", strconv.Itoa(y), 1)
+		url = strings.Replace(url, "{z}", strconv.Itoa(z), 1)
+		req, _ := http.NewRequest(http.MethodGet, url, nil)
+		req.Header.Set("User-Agent", request.DefaultUserAgent)
+		if gcjmap.ReferenceURL != "" {
+			req.Header.Set("Referer", gcjmap.ReferenceURL)
+		} else {
+			req.Header.Set("Referer", "https://www.amap.com/")
+		}
+
+		resp, err := httpClient.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		return resp, nil
+	}
 
 	// Create destination tile image
 	tile := image.NewRGBA(image.Rect(0, 0, 256, 256))

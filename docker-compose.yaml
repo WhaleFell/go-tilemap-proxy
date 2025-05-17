@@ -34,6 +34,10 @@ services:
     # environment:
     #   - NODE_ENV=production
 
+    extra_hosts:
+      # set host=host.docker.internal in .env on linux for xdebug
+      - ${host:-host}:host-gateway
+
     volumes:
       # - wf-data:/app/data
       - ./config:/app/config/

@@ -122,3 +122,21 @@ var TianDiTuSatellite = &GoogleMapProvider{
 	BaseURL:        "https://t0.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}&tk=75f0434f240669f4a2df6359275146d2",
 	ReferenceURL:   "https://map.tianditu.gov.cn/",
 }
+
+// 天地图路网
+// TianDiTu Road Map
+var TianDiTuRoad = &GoogleMapProvider{
+	Name:           "TianDiTu Road Map 天地图路网",
+	CoordinateType: "CGCS2000",
+	BaseURL:        "https://t0.tianditu.gov.cn/cia_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cia&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=75f0434f240669f4a2df6359275146d2",
+	ReferenceURL:   "https://map.tianditu.gov.cn/",
+}
+
+// Map here satelite maps.here.com
+// https://maps.hereapi.com/v3/background/mc/5/6/13/jpeg?xnlp=CL_JSMv3.1.63.1&apikey=xGVgeXEdD-GKS1ABa4dziKYCx94eKQIjqlMWAZOfrz0&style=satellite.day&ppi=200&size=512&lang=zh&lang2=en
+var MapHereSatelite = &GoogleMapProvider{
+	Name:           "Map Here Satelite",
+	CoordinateType: "WGJ84",
+	BaseURL:        "https://maps.hereapi.com/v3/background/mc/{z}/{x}/{y}/jpeg?xnlp=CL_JSMv3.1.63.1&apikey=xGVgeXEdD-GKS1ABa4dziKYCx94eKQIjqlMWAZOfrz0&style=satellite.day&ppi=200&size=512&lang=zh&lang2=en",
+	ReferenceURL:   "https://maps.here.com/",
+}

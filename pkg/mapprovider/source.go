@@ -14,4 +14,6 @@ var MapSourceList = map[string]TileMapProvider{
 	"cyclosm":            OpenStreetMapCyclOSM,
 	"amapRoad":           AmapRoadMap,
 	"tiandituSatellite":  TianDiTuSatellite,
+	"tiandituRoad":       TianDiTuRoad,
+	"maphereSatellite":   MapHereSatelite,
 }

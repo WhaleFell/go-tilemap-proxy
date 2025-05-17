@@ -1,12 +1,15 @@
 // GCJ02 coordinate tile map convert to WGS84 tile map with pixel-level correction
+// 同时支持 GCJ02（高德）和 BD09（百度）坐标系的图像获取
 
 package mapprovider
 
 import (
 	"bytes"
 	"fmt"
+	"go-map-proxy/pkg/logger"
 	"go-map-proxy/pkg/request"
 	"image"
+	"image/jpeg"
 	"image/png"
 	"io"
 	"math"
@@ -63,6 +66,17 @@ func wgs84ToGCJ02(wgsLat, wgsLon float64) (gcjLat, gcjLon float64) {
 	return
 }
 
+// Convert GCJ02 to BD09 坐标转换：从 GCJ02 转换到 百度 BD09
+func gcj02ToBd09(gcjLat, gcjLon float64) (bdLat, bdLon float64) {
+	x := gcjLon
+	y := gcjLat
+	z := math.Sqrt(x*x+y*y) + 0.00002*math.Sin(y*math.Pi*3000.0/180.0)
+	theta := math.Atan2(y, x) + 0.000003*math.Cos(x*math.Pi*3000.0/180.0)
+	bdLon = z*math.Cos(theta) + 0.0065
+	bdLat = z*math.Sin(theta) + 0.006
+	return
+}
+
 // latitude offset calculation (GCJ02 encrypted)
 func transformLat(x, y float64) float64 {
 	ret := -100.0 + 2.0*x + 3.0*y + 0.2*y*y + 0.1*x*y + 0.2*math.Sqrt(math.Abs(x))
@@ -83,34 +97,32 @@ func transformLon(x, y float64) float64 {
 
 // Check if the coordinate is in mainland China (excluding Hong Kong, Macau, and Taiwan)
 func isInMainlandChina(lat, lon float64) bool {
-	// Mainland China coordinate range
 	if lon < 73.675379 || lon > 135.026311 || lat < 18.197701 || lat > 53.458804 {
 		return false
 	}
-
-	// exclude Taiwan
 	if lon >= 119.0 && lon <= 123.0 && lat >= 21.5 && lat <= 25.5 {
-		return false
+		return false // exclude Taiwan
 	}
-
-	// exclude Hong Kong
-	// if lon >= 113.8 && lon <= 114.4 && lat >= 22.2 && lat <= 22.6 {
-	// 	return false
-	// }
-
-	// exclude Macau
-	// if lon >= 113.5 && lon <= 113.6 && lat >= 22.1 && lat <= 22.3 {
-	// 	return false
-	// }
-
 	return true
 }
 
+// tms xyz to google xyz
+func tmsToGoogleXY(x, y, z int) (gx, gy, gz int) {
+	gz = z
+	// TMS y coordinate is inverted
+	gy = (1 << z) - 1 - y
+	gx = x
+	return
+}
+
+// GCJ02MapProvider 支持 GCJ02 和 BD09，可通过 CoordinateType 字段区分
+// GCJ02MapProvider support GCJ02 and BD09, which can be distinguished by the CoordinateType field
 type GCJ02MapProvider struct {
 	Name           string
 	BaseURL        string
 	ReferenceURL   string
-	CoordinateType string
+	CoordinateType string // 可为 "GCJ02" 或 "BD09" Can be "GCJ02" or "BD09"
+	IsTMS          bool   // 是否为 TMS 坐标系 Whether it is a TMS coordinate system
 }
 
 func (gcjmap *GCJ02MapProvider) GetMapName() string {
@@ -118,14 +130,14 @@ func (gcjmap *GCJ02MapProvider) GetMapName() string {
 }
 
 func (gcjmap *GCJ02MapProvider) GetMapPic(x, y, z int) (*http.Response, error) {
+	logger.Debugf("GetMapPic: %s, %d, %d, %d", gcjmap.Name, x, y, z)
+
 	httpClient := request.DefaultHTTPClient
 
 	wgsLonTopLeft, wgsLatTopLeft := pixelXYToLonLat(x*256, y*256, z)
 	wgsLonBottomRight, wgsLatBottomRight := pixelXYToLonLat((x+1)*256-1, (y+1)*256-1, z)
 
-	// Check if the tile is outside China
 	if !isInMainlandChina(wgsLatTopLeft, wgsLonTopLeft) && !isInMainlandChina(wgsLatBottomRight, wgsLonBottomRight) {
-		// if the tile is outside China, return the original tile directly
 		url := strings.Replace(gcjmap.BaseURL, "{x}", strconv.Itoa(x), 1)
 		url = strings.Replace(url, "{y}", strconv.Itoa(y), 1)
 		url = strings.Replace(url, "{z}", strconv.Itoa(z), 1)
@@ -136,7 +148,6 @@ func (gcjmap *GCJ02MapProvider) GetMapPic(x, y, z int) (*http.Response, error) {
 		} else {
 			req.Header.Set("Referer", "https://www.amap.com/")
 		}
-
 		resp, err := httpClient.Do(req)
 		if err != nil {
 			return nil, err
@@ -144,73 +155,89 @@ func (gcjmap *GCJ02MapProvider) GetMapPic(x, y, z int) (*http.Response, error) {
 		return resp, nil
 	}
 
-	// Create destination tile image
 	tile := image.NewRGBA(image.Rect(0, 0, 256, 256))
 
-	// Create destination tile buffer
-	// Create a cache for the source tile images
+	// temporary cache for source tiles
 	sourceTileCache := make(map[string]image.Image)
 
-	// retrieve the destination tile pixel
-	// For each pixel in the tile...
-	for py := range 256 {
-		for px := range 256 {
-			// Convert target pixel to WGS84 coordinate
+	for py := 0; py < 256; py++ {
+		for px := 0; px < 256; px++ {
 			wgsLon, wgsLat := pixelXYToLonLat(x*256+px, y*256+py, z)
-			// Convert WGS84 coordinate to GCJ02
 			gcjLat, gcjLon := wgs84ToGCJ02(wgsLat, wgsLon)
-			// Get GCJ02 pixel location
-			gx, gy := lonLatToPixelXY(gcjLon, gcjLat, z)
 
+			if gcjmap.CoordinateType == "BD09" {
+				gcjLat, gcjLon = gcj02ToBd09(gcjLat, gcjLon) // 转 BD09
+			}
+
+			gx, gy := lonLatToPixelXY(gcjLon, gcjLat, z)
 			tx := gx / 256
 			ty := gy / 256
 			sx := gx % 256
 			sy := gy % 256
 
 			tileKey := fmt.Sprintf("%d_%d_%d", tx, ty, z)
+			// get cached tile
 			srcTile, ok := sourceTileCache[tileKey]
 
-			// Fetch source tile if not cached
 			if !ok {
+				logger.Debugf("Tile %s not found in cache, fetching from %s", tileKey, gcjmap.BaseURL)
+				// if isTMS, convert to Google XYZ
+				if gcjmap.IsTMS {
+					tx, ty, z = tmsToGoogleXY(tx, ty, z)
+				}
+
 				url := strings.Replace(gcjmap.BaseURL, "{x}", strconv.Itoa(tx), 1)
 				url = strings.Replace(url, "{y}", strconv.Itoa(ty), 1)
 				url = strings.Replace(url, "{z}", strconv.Itoa(z), 1)
-
 				req, _ := http.NewRequest(http.MethodGet, url, nil)
 				req.Header.Set("User-Agent", request.DefaultUserAgent)
 				if gcjmap.ReferenceURL != "" {
 					req.Header.Set("Referer", gcjmap.ReferenceURL)
 				}
-
 				resp, err := httpClient.Do(req)
-				// TODO: handle empty response
 
+				// handle error
 				if err != nil || resp.StatusCode != http.StatusOK {
+					logger.Errorf("Failed to fetch tile %s: %v", tileKey, err)
 					continue
 				}
-				img, err := png.Decode(resp.Body)
+
+				// check content type
+				contentType := resp.Header.Get("Content-Type")
+				var img image.Image
+				if strings.Contains(contentType, "image/png") {
+					img, err = png.Decode(resp.Body)
+				} else if strings.Contains(contentType, "image/jpeg") {
+					img, err = jpeg.Decode(resp.Body)
+				} else {
+					logger.Errorf("Unsupported content type %s for tile %s", contentType, tileKey)
+					resp.Body.Close()
+					return nil, fmt.Errorf("unsupported response content type %s", contentType)
+				}
+
 				resp.Body.Close()
 				if err != nil {
+					logger.Errorf("Failed to decode tile %s: %v", tileKey, err)
 					continue
 				}
 				sourceTileCache[tileKey] = img
 				srcTile = img
 			}
 
-			// Copy source pixel to target pixel
 			if rgbaImg, ok := srcTile.(*image.RGBA); ok {
 				if sx < 256 && sy < 256 {
-					color := rgbaImg.RGBAAt(sx, sy)
-					tile.SetRGBA(px, py, color)
+					tile.SetRGBA(px, py, rgbaImg.RGBAAt(sx, sy))
 				}
 			} else {
-				c := srcTile.At(sx, sy)
-				tile.Set(px, py, c)
+				tile.Set(px, py, srcTile.At(sx, sy))
 			}
 		}
 	}
 
 	var buf bytes.Buffer
+	// prelocalize buffer
+	buf.Grow(256 * 256 * 4) // 256x256 RGBA
+
 	_ = png.Encode(&buf, tile)
 	return &http.Response{
 		StatusCode: http.StatusOK,
@@ -225,3 +252,13 @@ var AmapRoadMap = &GCJ02MapProvider{
 	ReferenceURL:   "https://www.amap.com/",
 	CoordinateType: "GCJ02",
 }
+
+// ref: http://www.maps5.com/s/list1/50.html
+// var BaiduSatelliteMap = &GCJ02MapProvider{
+// 	Name: "Baidu Map 百度地图影像图",
+// 	// https://maponline0.bdimg.com/starpic/?qt=satepc&u=x=768;y=160;z=12;v=009;type=sate&fm=46&app=webearth2&v=009&udt=20250515
+// 	BaseURL:        "https://maponline0.bdimg.com/starpic/?qt=satepc&u=x={x};y={y};z={z};v=009;type=sate&fm=46&app=webearth2&v=009&udt=20250515",
+// 	ReferenceURL:   "https://map.baidu.com/",
+// 	CoordinateType: "BD09",
+// 	IsTMS:          true,
+// }

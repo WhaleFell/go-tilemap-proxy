@@ -41,7 +41,7 @@ func findLevel(level string) zapcore.Level {
 	return zapcore.DebugLevel
 }
 
-var defaultLogger = NewZapLogger(false, zapcore.InfoLevel, "logs")
+var defaultLogger = NewZapLogger(false, zapcore.DebugLevel, "logs")
 
 func NewZapLogger(enableFile bool, logLevel zapcore.Level, logPath string) *zap.Logger {
 	// AddSync converts an io.Writer to a WriteSyncer.

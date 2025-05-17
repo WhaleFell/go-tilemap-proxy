@@ -115,6 +115,7 @@ func TileMapHandler(c echo.Context) error {
 	// get tile map picture response
 	tileMapPicResponse, err := provider.GetMapPic(tileMapParam.X, tileMapParam.Y, tileMapParam.Z)
 	if err != nil {
+		logger.Errorf("Get tile map picture error: %v", err)
 		return c.JSON(200, model.BaseAPIResponse[any]{
 			Code:    500,
 			Message: fmt.Sprintf("Get %s tile map picture error: %v", tileMapParam.MapType, err),
@@ -130,6 +131,7 @@ func TileMapHandler(c echo.Context) error {
 	// read tile map picture body
 	picBytes, err := io.ReadAll(tileMapPicResponse.Body)
 	if err != nil {
+		logger.Errorf("Read tile map picture error: %v", err)
 		return c.JSON(200, model.BaseAPIResponse[any]{
 			Code:    500,
 			Message: fmt.Sprintf("Read tile map picture error: %v", err),
@@ -148,6 +150,7 @@ func TileMapHandler(c echo.Context) error {
 
 	// if picBytes is empty, return failure picture
 	if len(picBytes) == 0 {
+		logger.Errorf("Tile map picture is empty")
 		return c.Blob(200, "image/png", assets.TileMapFailedPng)
 	}
 
@@ -157,6 +160,7 @@ func TileMapHandler(c echo.Context) error {
 	c.Response().WriteHeader(200)
 	_, err = c.Response().Writer.Write(picBytes)
 	if err != nil {
+		logger.Errorf("Write tile map picture error: %v", err)
 		return c.JSON(200, model.BaseAPIResponse[any]{
 			Code:    500,
 			Message: fmt.Sprintf("Write tile map picture error: %v", err),

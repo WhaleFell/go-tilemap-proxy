@@ -17,13 +17,13 @@ services:
   # 后端服务 | Backend service
 
   map-server:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-      # build arguments
-      args:
-        HTTP_PROXY: ${HTTP_PROXY}
-        HTTPS_PROXY: ${HTTPS_PROXY}
+    # build:
+    #   context: .
+    #   dockerfile: ./Dockerfile
+    #   # build arguments
+    #   args:
+    #     HTTP_PROXY: ${HTTP_PROXY}
+    #     HTTPS_PROXY: ${HTTPS_PROXY}
 
     image: whalefell/map-server:latest
 

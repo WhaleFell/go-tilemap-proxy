@@ -41,6 +41,9 @@ WORKDIR /app
 # Copy the built application
 COPY --from=builder /app/bin/map-server ./map-server
 
+# Install curl for healthcheck
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 # Change ownership of the application binary
 # RUN chown appuser:appuser /app/main
 

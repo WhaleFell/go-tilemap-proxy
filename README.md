@@ -34,6 +34,40 @@ go build -o ./bin/server.exe -trimpath -buildvcs=false -ldflags="-s -w -buildid=
 
 ```
 
+## deployment
+
+Recommend using docker to deploy the service.
+
+```bash
+# build docker image
+docker build \
+  --build-arg HTTP_PROXY=http://172.23.0.1:10808 \
+  --build-arg HTTPS_PROXY=http://172.23.0.1:10808 \
+  -f ./Dockerfile \
+  -t whalefell/map-server:0.0.1 .
+
+# set tag to latest
+docker tag whalefell/map-server:0.0.1 whalefell/map-server:latest
+
+# push to docker hub
+docker push whalefell/map-server:latest
+docker push whalefell/map-server:0.0.1
+
+# run docker container
+docker run -d \
+  --name map-server \
+  -p 8080:8080 \
+  -v /path/to/config:/app/config \
+  -v /path/to/cache:/cache \
+  whalefell/map-server:latest
+
+# run docker by docker-compose
+docker compose up -d
+
+# build docker-compose image
+docker compose build
+```
+
 ## Reference
 
 1. [echo web framework](https://echo.labstack.com)

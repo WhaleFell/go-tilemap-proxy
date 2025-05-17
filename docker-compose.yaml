@@ -1,0 +1,39 @@
+# version is obsolete
+# version: '3.8'
+
+# networks:
+#   wf-net:
+#     name: wf-net
+
+# volumes:
+#   wf-data:
+#       # driver: local
+#       # driver_opts:
+#       # type: none
+#       # device: /home/yourname/wf-data
+#       # o: bind
+
+services:
+  # 后端服务 | Backend service
+
+  map-server:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      # build arguments
+      args:
+        HTTP_PROXY: ${HTTP_PROXY}
+        HTTPS_PROXY: ${HTTPS_PROXY}
+
+    image: whalefell/map-server:latest
+
+    container_name: map-server
+    restart: always
+    expose:
+      - "8076:8076"
+    # environment:
+    #   - NODE_ENV=production
+
+    volumes:
+      # - wf-data:/app/data
+      - ./config:/app/config/

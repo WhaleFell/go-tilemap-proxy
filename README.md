@@ -1,10 +1,20 @@
 # Go Map Proxy
 
+![Go-Map-Proxy Logo](./assets/logo.png)
+
 Provides tile map reverse proxy and caching for private deployment of map services.
 
 Use golang and echo web framework to implement a simple map proxy service.
 
 **Provides the unified Google XYZ Tile map protocol.**
+
+## Features
+
+1. Provides the unified Google XYZ Tile map protocol across different tile map providers
+2. Supports caching for improved performance and offline deployment.
+3. Correcting China's tile maps (GCJ-02 coordinate system) to achieve pixel-level, lossless alignment with the universal WGS84 coordinate system.
+4. Supports multiple tile map providers, including Google, OpenStreetMap, Mapbox, and more.
+5. Supports custom proxy server(socks5, http, etc.) for external tile map providers.
 
 ## Development
 

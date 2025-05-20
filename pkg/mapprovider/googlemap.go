@@ -140,3 +140,11 @@ var MapHereSatelite = &GoogleMapProvider{
 	BaseURL:        "https://maps.hereapi.com/v3/background/mc/{z}/{x}/{y}/jpeg?xnlp=CL_JSMv3.1.63.1&apikey=xGVgeXEdD-GKS1ABa4dziKYCx94eKQIjqlMWAZOfrz0&style=satellite.day&ppi=200&size=512&lang=zh&lang2=en",
 	ReferenceURL:   "https://maps.here.com/",
 }
+
+// data.maptiler.com contour line map (elevation map) 等高线地图
+var MapTilerContour = &GoogleMapProvider{
+	Name:           "Map Tiler Contour",
+	CoordinateType: "WGJ84",
+	BaseURL:        "https://api.maptiler.com/tiles/terrain-rgb-v2/{z}/{x}/{y}.webp?key=KjOUJBOUa2Tw2LxazlpQ&mtsid=95a4a50f-1858-47df-a5d6-ecba3a179b55",
+	ReferenceURL:   "https://data.maptiler.com/",
+}

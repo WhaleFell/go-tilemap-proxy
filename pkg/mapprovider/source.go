@@ -16,4 +16,5 @@ var MapSourceList = map[string]TileMapProvider{
 	"tiandituSatellite":  TianDiTuSatellite,
 	"tiandituRoad":       TianDiTuRoad,
 	"maphereSatellite":   MapHereSatelite,
+	"mapTilerContour":    MapTilerContour,
 }

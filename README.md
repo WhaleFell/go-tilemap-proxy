@@ -42,6 +42,12 @@ go build -o go-map-proxy ./cmd/server
 # build with optimization
 go build -o ./bin/server.exe -trimpath -buildvcs=false -ldflags="-s -w -buildid= -checklinkname=0" -v ./cmd/server
 
+# update all dependencies
+go get -u ./...
+
+# check for outdated dependencies
+go list -u -m all
+
 ```
 
 ## deployment

@@ -156,7 +156,7 @@ var TraceStrackTopoMap = &GoogleMapProvider{
 		ID:             "trace_strack_topo_map",
 		MinZoom:        0,
 		MaxZoom:        18,
-		MapSize:        MapSize512,
+		MapSize:        MapSize256,
 		MapType:        MapTypeRaster,
 		ContentType:    MapContentTypePNG,
 		CoordinateType: CoordinateTypeWGS84,
@@ -168,7 +168,7 @@ var TraceStrackTopoMap = &GoogleMapProvider{
 // Arcgis Satelite
 var ArcgisSatelite = &GoogleMapProvider{
 	TileMapMetadata: &TileMapMetadata{
-		Name:           "Arcgis Satelite",
+		Name:           "(ESRI) Arcgis Satelite",
 		ID:             "arcgis_satelite",
 		MinZoom:        0,
 		MaxZoom:        18,

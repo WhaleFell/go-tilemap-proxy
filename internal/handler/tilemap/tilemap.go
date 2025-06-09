@@ -23,10 +23,11 @@ type TileMapPathParam struct {
 // List tile map sources
 func TileMapSourceList(c echo.Context) error {
 
-	mapSourceList := make([]*mapprovider.TileMapMetadata, 0, len(mapprovider.MapSourceMapping))
+	mapSourceList := make([]*mapprovider.TileMapMetadata, 0, len(mapprovider.MapSourceSlice))
 
-	for _, provider := range mapprovider.MapSourceMapping {
-		mapSourceList = append(mapSourceList, provider.GetMapMetadata().GetMetadataWithDefaults())
+	// use slice to prevent map source order
+	for _, provider := range mapprovider.MapSourceSlice {
+		mapSourceList = append(mapSourceList, provider.Value.GetMapMetadata().GetMetadataWithDefaults())
 	}
 
 	return c.JSON(200, model.BaseAPIResponse[[]*mapprovider.TileMapMetadata]{
@@ -62,8 +63,8 @@ func TileMapHandler(c echo.Context) error {
 		})
 	}
 
-	// find map provider in map source list
-	provider, ok := mapprovider.MapSourceMapping[tileMapParam.MapType]
+	// find map provider in `mapprovider.MapSourceIndex`
+	provider, ok := mapprovider.MapSourceIndex[tileMapParam.MapType]
 	if !ok {
 		return c.JSON(200, model.BaseAPIResponse[any]{
 			Code:    400,

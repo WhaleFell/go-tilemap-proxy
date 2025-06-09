@@ -69,7 +69,7 @@ type TileMapProvider interface {
 func (metadata *TileMapMetadata) GetMetadataWithDefaults() *TileMapMetadata {
 
 	// Name and ID should not be empty
-	if metadata.Name == "" && metadata.ID == "" {
+	if metadata.Name == "" || metadata.ID == "" {
 		panic("MapMetaData Name and ID cannot be empty")
 	}
 

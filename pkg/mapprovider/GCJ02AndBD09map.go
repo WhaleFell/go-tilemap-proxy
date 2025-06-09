@@ -250,6 +250,7 @@ func (gcjmap *GCJ02MapProvider) GetMapPic(x, y, z int) (*http.Response, error) {
 
 var AmapRoadMap = &GCJ02MapProvider{
 	TileMapMetadata: &TileMapMetadata{
+		Name:           "Amap Road Map",
 		ID:             "amap_road",
 		MinZoom:        0,
 		MaxZoom:        18,

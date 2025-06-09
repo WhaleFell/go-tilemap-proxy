@@ -12,16 +12,16 @@ func RegisterHandlers(echo *echo.Echo) {
 	// e.g. echo.GET("/", common.Index)
 
 	echo.GET("/", common.Index)
-	echo.GET("/health", common.HealthCheck)
-	echo.GET("/systemInfo", common.SystemInfo)
+	echo.GET("/health/", common.HealthCheck)
+	echo.GET("/systemInfo/", common.SystemInfo)
 
-	echo.Any("/proxy", common.URLProxy)
+	echo.Any("/proxy/", common.URLProxy)
 
 	// tile map server
 
-	tilemapGroup := echo.Group("/map")
-	tilemapGroup.GET("/list", tilemap.TileMapSourceList)
-	tilemapGroup.Any("/:mapType/:x/:y/:z", tilemap.TileMapHandler)
+	tilemapGroup := echo.Group("/map/")
+	tilemapGroup.GET("list/", tilemap.TileMapSourceList)
+	tilemapGroup.Any(":mapType/:x/:y/:z/", tilemap.TileMapHandler)
 
 	echo.HTTPErrorHandler = CustomGlobalHTTPErrorHandler
 }

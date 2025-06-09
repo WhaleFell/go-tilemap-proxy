@@ -23,22 +23,13 @@ type TileMapPathParam struct {
 // List tile map sources
 func TileMapSourceList(c echo.Context) error {
 
-	type MapSource struct {
-		MapType string `json:"map_type"`
-		MapName string `json:"map_name"`
+	mapSourceList := make([]*mapprovider.TileMapMetadata, 0, len(mapprovider.MapSourceMapping))
+
+	for _, provider := range mapprovider.MapSourceMapping {
+		mapSourceList = append(mapSourceList, provider.GetMapMetadata().GetMetadataWithDefaults())
 	}
 
-	mapSourceList := []MapSource{}
-
-	for key, provider := range mapprovider.MapSourceList {
-		mapSourceList = append(mapSourceList, MapSource{
-			MapType: key,
-			MapName: provider.GetMapName(),
-		})
-		fmt.Printf("Map source: %s\n", provider.GetMapName())
-	}
-
-	return c.JSON(200, model.BaseAPIResponse[[]MapSource]{
+	return c.JSON(200, model.BaseAPIResponse[[]*mapprovider.TileMapMetadata]{
 		Code:    200,
 		Message: "Get tile map source list success",
 		Data:    mapSourceList,
@@ -48,7 +39,7 @@ func TileMapSourceList(c echo.Context) error {
 // TileMapProxy handles tile map requests
 // It serves as a proxy for tile map services, allowing users to fetch tiles from various sources.
 // It provides unified Google XYZ tile map protocol.
-// format: /:mapType/:x/:y/:z?cache=<boolean>
+// format: /:mapID/:x/:y/:z?cache=<boolean>
 // mapType: the type of map, e.g. "google", "osm", etc.
 // x, y, z: the tile coordinates
 // cache: whether to use exist tile cache, default is true
@@ -71,6 +62,17 @@ func TileMapHandler(c echo.Context) error {
 		})
 	}
 
+	// find map provider in map source list
+	provider, ok := mapprovider.MapSourceMapping[tileMapParam.MapType]
+	if !ok {
+		return c.JSON(200, model.BaseAPIResponse[any]{
+			Code:    400,
+			Message: fmt.Sprintf("Tile map source %s not found", tileMapParam.MapType),
+			Data:    nil,
+		})
+	}
+	providerMetadata := provider.GetMapMetadata().GetMetadataWithDefaults()
+
 	// handle map cache
 	isUseCache := true
 	cacheParam := c.QueryParam("cache")
@@ -82,7 +84,7 @@ func TileMapHandler(c echo.Context) error {
 		// check if tile map picture is in cache
 		if cacheData, err := utils.Cache.GetCache(cacheKey); err == nil {
 			logger.Debugf("Tile map cache hit: %s", cacheKey)
-			c.Response().Header().Set(echo.HeaderContentType, "image/png")
+			c.Response().Header().Set(echo.HeaderContentType, string(providerMetadata.ContentType))
 			c.Response().Header().Set(echo.HeaderContentLength, fmt.Sprintf("%d", len(cacheData)))
 			// set cache policy
 			c.Response().Header().Set(echo.HeaderCacheControl, fmt.Sprintf("max-age=%d", config.Cfg.Cache.MaxAge))
@@ -100,16 +102,6 @@ func TileMapHandler(c echo.Context) error {
 		}
 		c.Response().Header().Set("X-cache", "MISS")
 		logger.Debugf("Tile map cache miss: %s", cacheKey)
-	}
-
-	// find map provider in map source list
-	provider, ok := mapprovider.MapSourceList[tileMapParam.MapType]
-	if !ok {
-		return c.JSON(200, model.BaseAPIResponse[any]{
-			Code:    400,
-			Message: fmt.Sprintf("Tile map source %s not found", tileMapParam.MapType),
-			Data:    nil,
-		})
 	}
 
 	// get tile map picture response

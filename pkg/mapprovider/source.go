@@ -1,20 +1,32 @@
 package mapprovider
 
+import "log"
+
 // map source
 
-var MapSourceList = map[string]TileMapProvider{
-	"gps":                GmapPureSatellite,
-	"gps2":               GmapPureSatellite2,
-	"osms":               OpenStreetMapStandard,
-	"osmg":               OpenStreetMapPublicGPS,
-	"topomap":            TraceStrackTopoMap,
-	"arcgisSatellite":    ArcgisSatelite,
-	"bingSatellite":      BingSateliteMap,
-	"googleHybridOffset": GoogleHybridOffsetMap,
-	"cyclosm":            OpenStreetMapCyclOSM,
-	"amapRoad":           AmapRoadMap,
-	"tiandituSatellite":  TianDiTuSatellite,
-	"tiandituRoad":       TianDiTuRoad,
-	"maphereSatellite":   MapHereSatelite,
-	"mapTilerContour":    MapTilerContour,
+var MapSourceProviders = []TileMapProvider{
+	GmapPureSatellite,
+	GmapPureSatellite2,
+	OpenStreetMapStandard,
+	OpenStreetMapPublicGPS,
+	TraceStrackTopoMap,
+	ArcgisSatelite,
+	BingSateliteMap,
+	GoogleHybridOffsetMap,
+	OpenStreetMapCyclOSM,
+	AmapRoadMap,
+	TianDiTuSatellite,
+	TianDiTuRoad,
+	MapHereSatelite,
+	MapTilerContour,
+}
+
+var MapSourceMapping = map[string]TileMapProvider{}
+
+func init() {
+	for _, provider := range MapSourceProviders {
+		mapMetadata := provider.GetMapMetadata()
+		MapSourceMapping[mapMetadata.ID] = provider
+		log.Printf("Map ID: %s, Name:%s is registered \n", mapMetadata.ID, mapMetadata.Name)
+	}
 }

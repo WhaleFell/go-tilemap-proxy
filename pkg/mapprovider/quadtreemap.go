@@ -8,17 +8,15 @@ import (
 )
 
 type QuadTreeMapProvider struct {
-	Name string
+	*TileMapMetadata
 
 	// https://t.ssl.ak.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=14482&n=z&prx=1"
-	BaseURL string
-
-	CoordinateType string
-	ReferenceURL   string
+	BaseURL      string
+	ReferenceURL string
 }
 
-func (qmp *QuadTreeMapProvider) GetMapName() string {
-	return qmp.Name
+func (qmp *QuadTreeMapProvider) GetMapMetadata() *TileMapMetadata {
+	return qmp.TileMapMetadata
 }
 
 // cover xyz coordinate to bing Quadtree
@@ -69,8 +67,15 @@ func (qmp *QuadTreeMapProvider) GetMapPic(x, y, z int) (*http.Response, error) {
 
 // Bing Satelite Map
 var BingSateliteMap = &QuadTreeMapProvider{
-	Name:           "Bing Satellite Map(必应卫星图)",
-	BaseURL:        "https://t.ssl.ak.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=14482&n=z&prx=1",
-	CoordinateType: "WGJ84",
-	ReferenceURL:   "https://www.bing.com/maps",
+	TileMapMetadata: &TileMapMetadata{
+		Name:           "Bing Satellite Map",
+		ID:             "bing_satelite",
+		MinZoom:        0,
+		MaxZoom:        18,
+		MapType:        MapTypeRaster,
+		ContentType:    MapContentTypeJPEG,
+		CoordinateType: CoordinateTypeWGS84,
+	},
+	BaseURL:      "https://t.ssl.ak.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=14482&n=z&prx=1",
+	ReferenceURL: "https://www.bing.com/maps",
 }

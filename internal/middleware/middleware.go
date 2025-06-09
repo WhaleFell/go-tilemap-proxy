@@ -12,7 +12,12 @@ import (
 func RegisterMiddleware(e *echo.Echo) {
 	// Register all middlewares here
 	// e.g.:
-	// http.Handle("/path", middleware1(middleware2(http.HandlerFunc(yourHandler))))
+	// http.Handle("/path/", middleware1(middleware2(http.HandlerFunc(yourHandler))))
+
+	// Add trailing slash pre middleware
+	// This middleware will add a trailing slash to the request path if it doesn't have one.
+	// `/list` will be redirected to `/list/`
+	e.Pre(middleware.AddTrailingSlash())
 
 	// buildin middlewares
 	// e.Use(middleware.Logger())

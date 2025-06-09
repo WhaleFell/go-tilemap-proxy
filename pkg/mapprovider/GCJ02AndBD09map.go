@@ -1,5 +1,5 @@
 // GCJ02 coordinate tile map convert to WGS84 tile map with pixel-level correction
-// 同时支持 GCJ02（高德）和 BD09（百度）坐标系的图像获取
+// GCJ02 或 BD09 坐标系的瓦片地图转换为 WGS84 坐标系的瓦片地图，并进行像素级校正
 
 package mapprovider
 
@@ -118,6 +118,7 @@ func tmsToGoogleXY(x, y, z int) (gx, gy, gz int) {
 // GCJ02MapProvider 支持 GCJ02 和 BD09，可通过 CoordinateType 字段区分
 // GCJ02MapProvider support GCJ02 and BD09, which can be distinguished by the CoordinateType field
 type GCJ02MapProvider struct {
+	*TileMapMetadata
 	Name           string
 	BaseURL        string
 	ReferenceURL   string
@@ -125,10 +126,11 @@ type GCJ02MapProvider struct {
 	IsTMS          bool   // 是否为 TMS 坐标系 Whether it is a TMS coordinate system
 }
 
-func (gcjmap *GCJ02MapProvider) GetMapName() string {
-	return gcjmap.Name
+func (gcjmap *GCJ02MapProvider) GetMapMetadata() *TileMapMetadata {
+	return gcjmap.TileMapMetadata
 }
 
+// gcj02 or bd09 convert to WSG84(EPSG:4326) tile map
 func (gcjmap *GCJ02MapProvider) GetMapPic(x, y, z int) (*http.Response, error) {
 	logger.Debugf("GetMapPic: %s, %d, %d, %d", gcjmap.Name, x, y, z)
 
@@ -247,10 +249,18 @@ func (gcjmap *GCJ02MapProvider) GetMapPic(x, y, z int) (*http.Response, error) {
 }
 
 var AmapRoadMap = &GCJ02MapProvider{
-	Name:           "Amap Road Map 高德路网",
-	BaseURL:        "https://webst01.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}",
-	ReferenceURL:   "https://www.amap.com/",
-	CoordinateType: "GCJ02",
+	TileMapMetadata: &TileMapMetadata{
+		ID:             "amap_road",
+		MinZoom:        0,
+		MaxZoom:        18,
+		MapType:        MapTypeRaster,
+		MapSize:        MapSize256,
+		ContentType:    MapContentTypePNG,
+		CoordinateType: CoordinateTypeWGS84,
+	},
+
+	BaseURL:      "https://webst01.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}",
+	ReferenceURL: "https://www.amap.com/",
 }
 
 // ref: http://www.maps5.com/s/list1/50.html

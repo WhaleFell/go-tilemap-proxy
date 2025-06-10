@@ -150,18 +150,19 @@ var OpenStreetMapPublicGPS = &GoogleMapProvider{
 
 // TraceStrack Topo Map
 // Note that the tile photo pixel size is 512x512
+// https://tile.tracestrack.com/topo__/13/6676/3544.webp?key=383118983d4a867dd2d367451720d724
 var TraceStrackTopoMap = &GoogleMapProvider{
 	TileMapMetadata: &TileMapMetadata{
 		Name:           "TraceStrack Topo Map",
 		ID:             "trace_strack_topo_map",
 		MinZoom:        0,
 		MaxZoom:        18,
-		MapSize:        MapSize256,
+		MapSize:        MapSize512,
 		MapType:        MapTypeRaster,
-		ContentType:    MapContentTypePNG,
+		ContentType:    MapContentTypeWebP,
 		CoordinateType: CoordinateTypeWGS84,
 	},
-	BaseURL:      "https://tile.tracestrack.com/topo__/{z}/{x}/{y}.png?key=383118983d4a867dd2d367451720d724",
+	BaseURL:      "https://tile.tracestrack.com/topo__/{z}/{x}/{y}.webp?key=383118983d4a867dd2d367451720d724",
 	ReferenceURL: "https://www.openstreetmap.org/",
 }
 

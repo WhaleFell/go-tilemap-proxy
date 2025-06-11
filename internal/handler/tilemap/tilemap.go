@@ -9,6 +9,7 @@ import (
 	"go-map-proxy/pkg/logger"
 	"go-map-proxy/pkg/mapprovider"
 	"io"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -80,7 +81,12 @@ func TileMapHandler(c echo.Context) error {
 	if cacheParam == "false" {
 		isUseCache = false
 	}
-	cacheKey := fmt.Sprintf("%s/%d/%d/%d", tileMapParam.MapType, tileMapParam.X, tileMapParam.Y, tileMapParam.Z)
+	// hash map cache key
+	// cacheKey := fmt.Sprintf("%s/%d/%d/%d", tileMapParam.MapType, tileMapParam.X, tileMapParam.Y, tileMapParam.Z)
+	// path map cache key
+	fileExtension := strings.Split(string(providerMetadata.ContentType), "/")[1]
+	cacheKey := fmt.Sprintf("%s/%d/%d/%d.%s", tileMapParam.MapType, tileMapParam.Z, tileMapParam.X, tileMapParam.Y, fileExtension)
+
 	if isUseCache {
 		// check if tile map picture is in cache
 		if cacheData, err := utils.Cache.GetCache(cacheKey); err == nil {
@@ -119,7 +125,7 @@ func TileMapHandler(c echo.Context) error {
 
 	// set response header
 	c.Response().Header().Set(echo.HeaderContentType, tileMapPicResponse.Header.Get("Content-Type"))
-	c.Response().Header().Set(echo.HeaderContentLength, tileMapPicResponse.Header.Get("Content-Length"))
+	// c.Response().Header().Set(echo.HeaderContentLength, tileMapPicResponse.Header.Get("Content-Length"))
 
 	// read tile map picture body
 	picBytes, err := io.ReadAll(tileMapPicResponse.Body)

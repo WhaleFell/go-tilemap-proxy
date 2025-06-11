@@ -42,7 +42,7 @@ func init() {
 	}
 
 	// init map cache
-	utils.InitMapCache(config.Cfg.Cache.Path)
+	utils.NewPathMapCache(config.Cfg.Cache.Path)
 
 	// init logger
 	logger.InitLogger(&logger.LoggerCfg{

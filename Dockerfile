@@ -1,7 +1,7 @@
 # ref: https://www.saybackend.com/blog/02-golang-dockerfile
 
 # Stage 1: Install dependencies
-FROM golang:1.23-bookworm AS deps
+FROM golang:1.24-bookworm AS deps
 
 
 # set build args
@@ -17,7 +17,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # Stage 2: Build the application
-FROM golang:1.23-bookworm AS builder
+FROM golang:1.24-bookworm AS builder
 
 WORKDIR /app
 

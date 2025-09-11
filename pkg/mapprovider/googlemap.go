@@ -2,7 +2,9 @@ package mapprovider
 
 import (
 	"fmt"
+	"go-map-proxy/pkg/logger"
 	"go-map-proxy/pkg/request"
+	"math"
 	"math/rand"
 	"net/http"
 	"regexp"
@@ -62,6 +64,8 @@ func (gmp *GoogleMapProvider) GetMapPic(x, y, z int) (*http.Response, error) {
 	mapUrl = strings.Replace(mapUrl, "{z}", strconv.Itoa(z), 1) // Replace {z} with the actual z value
 	// replace `{serverpart:<item1>,<item2>,<item3>}` randomly with item1, item2, or item3
 	mapUrl = gmp.ReplaceServerPart(mapUrl)
+
+	logger.Debugf("[GoogleMapProvider: %s] tile URL: %s", gmp.Name, mapUrl)
 
 	// Make a GET request to the map URL
 	request, err := http.NewRequest(http.MethodGet, mapUrl, nil)
@@ -278,4 +282,104 @@ var OpenStreetMapCyclOSM = &GoogleMapProvider{
 
 	BaseURL:      "https://{serverpart:a,b,c}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png",
 	ReferenceURL: "https://www.openstreetmap.org/",
+}
+
+var TencentMapRoad = &GoogleMapProvider{
+	TileMapMetadata: &TileMapMetadata{
+		Name:           "Tencent Map Road 腾讯路网",
+		ID:             "tencent_map_road",
+		MinZoom:        0,
+		MaxZoom:        18,
+		MapSize:        MapSize256,
+		MapType:        MapTypeRaster,
+		ContentType:    MapContentTypePNG,
+		CoordinateType: CoordinateTypeGCJ02,
+	},
+	// https://rt2.map.gtimg.com/tile?z=6&x=50&y=36&type=vector&styleid=3
+	// https://rt0.map.gtimg.com/tile?z=11&x=1692&y=1207&type=vector&styleid=3
+	BaseURL:      "https://rt{serverpart:0,1,2,3}.map.gtimg.com/tile?z={z}&x={x}&y={y}&styleid=3",
+	ReferenceURL: "https://map.qq.com/",
+}
+
+// https://p1.map.gtimg.com/sateTiles/6/3/2/51_35.jpg
+//
+//	var satelliteTileLayer = new qq.maps.TileLayer({
+//	  getTileUrl: function(coord, zoom) {
+//	    return "http://p1.map.gtimg.com/sateTiles/"+zoom+"/"+Math.floor(coord.x/16)+"/"+Math.floor(coord.y/16)+"/"+coord.x+"_"+coord.y+".jpg";
+//	  },
+//	  tileSize: new qq.maps.Size(256, 256),
+//	  name: "卫星图"
+//	});
+type TencentMapSatelliteProvider struct {
+	*GoogleMapProvider
+}
+
+var TencentMapSatellite = &TencentMapSatelliteProvider{
+	GoogleMapProvider: &GoogleMapProvider{
+		TileMapMetadata: &TileMapMetadata{
+			Name:           "Tencent Map Satellite 腾讯卫星影像",
+			ID:             "tencent_map_satellite",
+			MinZoom:        0,
+			MaxZoom:        18,
+			MapSize:        MapSize256,
+			MapType:        MapTypeRaster,
+			ContentType:    MapContentTypeJPEG,
+			CoordinateType: CoordinateTypeGCJ02,
+		},
+		BaseURL:      "https://p{serverpart:0,1,2,3}.map.gtimg.com/sateTiles/{z}/{x/16}/{y/16}/{x}_{y}.jpg",
+		ReferenceURL: "https://map.qq.com/",
+	},
+}
+
+// override the TencentMapSatelite GetMapPic to match the tile url pattern
+func (tmp *TencentMapSatelliteProvider) GetMapPic(x, y, z int) (*http.Response, error) {
+	// check zoom level
+	if z < tmp.MinZoom || z > tmp.MaxZoom {
+		return nil, fmt.Errorf("map: %s zoom level %d is out of range [%d, %d]", tmp.Name, z, tmp.MinZoom, tmp.MaxZoom)
+	}
+
+	httpClient := request.DefaultHTTPClient
+	mapUrl := tmp.BaseURL
+
+	// y = int.Parse( Math.Pow(2, z).ToString()) - 1 - y;
+	y = int(math.Pow(2, float64(z))) - 1 - y
+	mapUrl = strings.Replace(mapUrl, "{y}", strconv.Itoa(y), 1) // Replace {y} with the actual y value
+
+	mapUrl = strings.Replace(mapUrl, "{x}", strconv.Itoa(x), 1) // Replace {x} with the actual x value
+	mapUrl = strings.Replace(mapUrl, "{y}", strconv.Itoa(y), 1) // Replace {y} with the actual y value
+	mapUrl = strings.Replace(mapUrl, "{z}", strconv.Itoa(z), 1) // Replace {z} with the actual z value
+	// replace {x/16} and {y/16}
+	mapUrl = strings.Replace(mapUrl, "{x/16}", strconv.Itoa(x/16), 1)
+	mapUrl = strings.Replace(mapUrl, "{y/16}", strconv.Itoa(y/16), 1)
+
+	// replace `{serverpart:<item1>,<item2>,<item3>}` randomly with item1, item2, or item3
+	mapUrl = tmp.ReplaceServerPart(mapUrl)
+
+	logger.Debugf("Tencent Map Satellite tile URL: %s", mapUrl)
+
+	// Make a GET request to the map URL
+	request, err := http.NewRequest(http.MethodGet, mapUrl, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
+
+	if tmp.ReferenceURL != "" {
+		request.Header.Set("Referer", tmp.ReferenceURL)
+	} else {
+		request.Header.Set("Referer", "https://www.openstreetmap.org/")
+	}
+
+	response, err := httpClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to get map tile, status code: %d", response.StatusCode)
+	}
+
+	return response, nil
+
 }

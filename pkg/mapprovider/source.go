@@ -6,19 +6,21 @@ import "log"
 
 var MapSourceProviders = []TileMapProvider{
 	GmapPureSatellite,
-	GmapPureSatellite2,
+	// GmapPureSatellite2,
 	OpenStreetMapStandard,
 	OpenStreetMapPublicGPS,
 	TraceStrackTopoMap,
 	ArcgisSatelite,
 	BingSateliteMap,
-	GoogleHybridOffsetMap,
+	// GoogleHybridOffsetMap,
 	OpenStreetMapCyclOSM,
 	AmapRoadMap,
 	TianDiTuSatellite,
 	TianDiTuRoad,
-	MapHereSatelite,
-	MapTilerContour,
+	// MapHereSatelite,
+	// MapTilerContour,
+	TencentMapRoad,
+	TencentMapSatellite,
 }
 
 // use struct+slice to prevent the order of map source.

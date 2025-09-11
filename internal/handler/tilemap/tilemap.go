@@ -124,7 +124,14 @@ func TileMapHandler(c echo.Context) error {
 	defer tileMapPicResponse.Body.Close()
 
 	// set response header
-	c.Response().Header().Set(echo.HeaderContentType, tileMapPicResponse.Header.Get("Content-Type"))
+	if !strings.Contains(tileMapPicResponse.Header.Get("Content-Type"), "image") {
+		logger.Errorf("Tile map picture content type is not image: %s, fallback to metadata content type", tileMapPicResponse.Header.Get("Content-Type"))
+		c.Response().Header().Set(echo.HeaderContentType, string(providerMetadata.ContentType))
+	} else {
+		c.Response().Header().Set(echo.HeaderContentType, tileMapPicResponse.Header.Get("Content-Type"))
+	}
+
+	// set response length
 	// c.Response().Header().Set(echo.HeaderContentLength, tileMapPicResponse.Header.Get("Content-Length"))
 
 	// read tile map picture body

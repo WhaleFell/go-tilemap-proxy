@@ -20,8 +20,8 @@ import (
 )
 
 var (
-	VERSION    = "0.0.1"
-	BUILD_TIME = "2025-05-10T00:00:00Z"
+	VERSION    = "0.1.0"
+	BUILD_TIME = "2025-09-11T00:00:00Z"
 )
 
 var configPath string

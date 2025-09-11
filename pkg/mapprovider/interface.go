@@ -52,7 +52,7 @@ type TileMapMetadata struct {
 	ID             string            `json:"id"`   // Unique identifier for the map provider
 	MinZoom        int               `json:"min_zoom"`
 	MaxZoom        int               `json:"max_zoom"`
-	MapType        MapType           `json:"map_type"`
+	MapType        MapType           `json:"map_type"` // vector or raster
 	MapSize        MapSize           `json:"map_size"`
 	CoordinateType MapCoordinateType `json:"coordinate_type"`
 	ContentType    MapContentType    `json:"content_type"`

@@ -78,7 +78,9 @@ func TileMapHandler(c echo.Context) error {
 	// handle map cache
 	isUseCache := true
 	cacheParam := c.QueryParam("cache")
-	if cacheParam == "false" {
+
+	// fix: read Cfg enable cache config
+	if cacheParam == "false" || !config.Cfg.Cache.Enable {
 		isUseCache = false
 	}
 	// hash map cache key
@@ -144,15 +146,17 @@ func TileMapHandler(c echo.Context) error {
 			Data:    nil,
 		})
 	}
-	// save tile map picture to cache (in new goroutine)
-	go func() {
-		err := utils.Cache.SetCache(cacheKey, picBytes)
-		if err != nil {
-			logger.Errorf("Set tile map cache error: %v", err)
-		} else {
-			logger.Debugf("Set tile map cache success: %s", cacheKey)
-		}
-	}()
+	// save tile map picture to cache (in new goroutine) if cache is enabled
+	if isUseCache {
+		go func() {
+			err := utils.Cache.SetCache(cacheKey, picBytes)
+			if err != nil {
+				logger.Errorf("Set tile map cache error: %v", err)
+			} else {
+				logger.Debugf("Set tile map cache success: %s", cacheKey)
+			}
+		}()
+	}
 
 	// if picBytes is empty, return failure picture
 	if len(picBytes) == 0 {

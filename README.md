@@ -104,6 +104,21 @@ docker compose up -d
 docker compose build
 ```
 
+Best practice: Nginx (Reverse Proxy) HTTPS + docker-compose + CDN
+
+```shell
+# copy docker-compose.yaml and nginx.conf
+# self-signed certificate for testing
+mkdir ssl
+
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout ./ssl/privkey.pem \
+    -out ./ssl/fullchain.pem \
+    -subj "/C=CN/ST=State/L=City/O=Organization/CN=localhost"
+
+
+```
+
 ## Usage
 
 GET: `/map/list/` - List all available map sources

@@ -21,6 +21,7 @@ var MapSourceProviders = []TileMapProvider{
 	// MapTilerContour,
 	TencentMapRoad,
 	TencentMapSatellite,
+	TuxunHuaweiStreetMap,
 }
 
 // use struct+slice to prevent the order of map source.

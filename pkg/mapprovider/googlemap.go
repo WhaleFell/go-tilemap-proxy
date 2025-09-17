@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go-map-proxy/pkg/logger"
 	"go-map-proxy/pkg/request"
+	"io"
 	"math"
 	"math/rand"
 	"net/http"
@@ -17,7 +18,6 @@ import (
 
 type GoogleMapProvider struct {
 	*TileMapMetadata
-	Name string
 
 	// https://{serverpart}.example.com/{z}/{x}/{y}.png
 	BaseURL string
@@ -26,7 +26,7 @@ type GoogleMapProvider struct {
 	// WGJ84: world geographic coordinate system (World Geodetic System 1984)
 	// GCJ02: China geodetic coordinate system (国测局 02 坐标系)
 	// BD09: Baidu coordinate system (百度坐标系)
-	CoordinateType string
+	// CoordinateType string
 
 	ReferenceURL string
 }
@@ -77,8 +77,10 @@ func (gmp *GoogleMapProvider) GetMapPic(x, y, z int) (*http.Response, error) {
 
 	if gmp.ReferenceURL != "" {
 		request.Header.Set("Referer", gmp.ReferenceURL)
+		request.Header.Set("Origin", gmp.ReferenceURL)
 	} else {
 		request.Header.Set("Referer", "https://www.openstreetmap.org/")
+		request.Header.Set("Origin", "https://www.openstreetmap.org/")
 	}
 
 	response, err := httpClient.Do(request)
@@ -87,6 +89,11 @@ func (gmp *GoogleMapProvider) GetMapPic(x, y, z int) (*http.Response, error) {
 	}
 
 	if response.StatusCode != http.StatusOK {
+		// read response body for debug
+		defer response.Body.Close()
+		body, _ := io.ReadAll(response.Body)
+		logger.Warnf("[GoogleMapProvider: %s] tile error response: %s", gmp.Name, body)
+
 		return nil, fmt.Errorf("failed to get map tile, status code: %d", response.StatusCode)
 	}
 
@@ -301,6 +308,7 @@ var TencentMapRoad = &GoogleMapProvider{
 	ReferenceURL: "https://map.qq.com/",
 }
 
+// Tencent Map Satellite algorithm example:
 // https://p1.map.gtimg.com/sateTiles/6/3/2/51_35.jpg
 //
 //	var satelliteTileLayer = new qq.maps.TileLayer({
@@ -382,4 +390,23 @@ func (tmp *TencentMapSatelliteProvider) GetMapPic(x, y, z int) (*http.Response, 
 
 	return response, nil
 
+}
+
+// tuxun.cn huawei street map (petal maps 华为花瓣地图)
+// https://maprastertile-drcn.dbankcdn.cn/display-service/v1/online-render/getTile/25.06.13.20/8/209/110/?language=zh&p=46&scale=2&mapType=ROADMAP&presetStyleId=standard&pattern=JPG&key=DAEDANitav6P7Q0lWzCzKkLErbrJG4kS1u/CpEe5ZyxW5u0nSkb40bJ+YAugRN03fhf0BszLS1rCrzAogRHDZkxaMrloaHPQGO6LNg==
+// https://maprastertile-drcn.dbankcdn.cn/display-service/v1/online-render/getTile/25.06.13.20/10/834/434/?language=zh&p=46&scale=2&mapType=ROADMAP&presetStyleId=standard&pattern=JPG&key=DAEDANitav6P7Q0lWzCzKkLErbrJG4kS1u/CpEe5ZyxW5u0nSkb40bJ+YAugRN03fhf0BszLS1rCrzAogRHDZkxaMrloaHPQGO6LNg==
+// DAEDANitav6P7Q0lWzCzKkLErbrJG4kS1u%2FCpEe5ZyxW5u0nSkb40bJ%2BYAugRN03fhf0BszLS1rCrzAogRHDZkxaMrloaHPQGO6LNg==
+var TuxunHuaweiStreetMap = &GoogleMapProvider{
+	TileMapMetadata: &TileMapMetadata{
+		Name:           "Tuxun Huawei Street Map 华为花瓣地图",
+		ID:             "tuxun_huawei_street_map",
+		MinZoom:        0,
+		MaxZoom:        18,
+		MapSize:        MapSize512,
+		MapType:        MapTypeRaster,
+		ContentType:    MapContentTypeJPEG,
+		CoordinateType: CoordinateTypeGCJ02,
+	},
+	BaseURL:      "https://maprastertile-drcn.dbankcdn.cn/display-service/v1/online-render/getTile/25.06.13.20/{z}/{x}/{y}/?language=zh&p=46&scale=2&mapType=ROADMAP&presetStyleId=standard&pattern=JPG&key=DAEDANitav6P7Q0lWzCzKkLErbrJG4kS1u%2FCpEe5ZyxW5u0nSkb40bJ%2BYAugRN03fhf0BszLS1rCrzAogRHDZkxaMrloaHPQGO6LNg==",
+	ReferenceURL: "https://tuxun.fun/",
 }

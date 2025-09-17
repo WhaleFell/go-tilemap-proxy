@@ -60,12 +60,12 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       # - ./ssl:/etc/nginx/ssl:ro # SSL证书目录 | SSL certificate directory
-      - /root/docker-configs/certificate/njspace.top/cf.pem:/etc/nginx/ssl/fullchain.pem
-      - /root/docker-configs/certificate/njspace.top/cf.key:/etc/nginx/ssl/privkey.pem
+      - ./cf.pem:/etc/nginx/ssl/fullchain.pem
+      - ./cf.key:/etc/nginx/ssl/privkey.pem
 
       # 自签名证书挂载 | Self-signed certificate mount
-      - ./server.crt:/etc/nginx/ssl/self-signed.crt:ro
-      - ./server.key:/etc/nginx/ssl/self-signed.key:ro
+      # - ./server.crt:/etc/nginx/ssl/self-signed.crt:ro
+      # - ./server.key:/etc/nginx/ssl/self-signed.key:ro
       # - /var/log/nginx:/var/log/nginx
 
     depends_on:

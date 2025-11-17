@@ -21,7 +21,7 @@ func RegisterHandlers(echo *echo.Echo) {
 
 	tilemapGroup := echo.Group("/map/")
 	tilemapGroup.GET("list/", tilemap.TileMapSourceList)
-	tilemapGroup.Any(":mapType/:x/:y/:z/", tilemap.TileMapHandler)
+	tilemapGroup.Any(":mapType/:z/:x/:y/", tilemap.TileMapHandler)
 	tilemapGroup.GET("testpage/", tilemap.TileMapTestPageHandler)
 
 	echo.HTTPErrorHandler = CustomGlobalHTTPErrorHandler

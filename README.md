@@ -32,6 +32,7 @@ Use golang and echo web framework to implement a simple map proxy service.
 12. Map Tiler Contour (等高线)
 13. (ESRI) Arcgis Satelite Map (ESRI 卫星)
 14. Tencent Satellite Map (腾讯卫星[GCJ02])
+15. Huawei Road Map (Petal Map 华为花瓣地图[GCJ02])
 
 ## Development
 

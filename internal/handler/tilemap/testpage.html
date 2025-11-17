@@ -1,590 +1,623 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>地图瓦片测试页面 - Map Tile Test Page</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-            overflow: hidden;
-        }
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+      }
 
-        .header {
-            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
+      .header {
+        background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
 
+      .header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        font-weight: 700;
+      }
+
+      .header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+      }
+
+      .content {
+        padding: 30px;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 30px;
+        align-items: center;
+        justify-content: center;
+      }
+
+      button {
+        padding: 15px 30px;
+        border: 2px solid #e1e5e9;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 40px;
+        color: #666;
+        font-size: 1.1rem;
+      }
+
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #4facfe;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .coordinate-info {
+        background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 20px;
+        margin-bottom: 30px;
+        border-radius: 12px;
+        border: 2px solid #e1e5e9;
+      }
+
+      .coord-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 10px;
+      }
+
+      .info-item {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .info-label {
+        font-size: 0.8rem;
+        color: #666;
+        font-weight: 600;
+        margin-bottom: 2px;
+      }
+
+      .info-value {
+        font-family: monospace;
+        font-size: 0.9rem;
+        color: #333;
+        background: white;
+        padding: 6px 10px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+      }
+
+      .map-sources-container {
+        display: grid;
+        gap: 30px;
+      }
+
+      .map-source-section {
+        border: 2px solid #e1e5e9;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #f8f9fa;
+      }
+
+      .map-source-header {
+        background: linear-gradient(90deg, #6c757d 0%, #495057 100%);
+        color: white;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .map-source-info {
+        flex: 1;
+      }
+
+      .map-source-name {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+
+      .map-source-id {
+        font-family: monospace;
+        font-size: 0.9rem;
+        opacity: 0.8;
+      }
+
+      .map-source-stats {
+        text-align: center;
+        color: white;
+      }
+
+      .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+
+      .stat-label {
+        font-size: 0.8rem;
+        opacity: 0.8;
+      }
+
+      .tiles-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        padding: 20px;
+      }
+
+      .tile-item {
+        background: white;
+        border-radius: 8px;
+        padding: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+      }
+
+      .tile-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+      }
+
+      .tile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .tile-coord {
+        font-family: monospace;
+        font-size: 0.8rem;
+        color: #666;
+        font-weight: 600;
+      }
+
+      .tile-status {
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+      }
+
+      .status-success {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .status-error {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      .status-loading {
+        background: #d1ecf1;
+        color: #0c5460;
+      }
+
+      .tile-image {
+        width: 100%;
+        height: 150px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        overflow: hidden;
+      }
+
+      .tile-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 6px;
+      }
+
+      .error-response {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 4px;
+        padding: 8px;
+        margin-top: 8px;
+        font-family: monospace;
+        font-size: 0.7rem;
+        color: #856404;
+        max-height: 80px;
+        overflow-y: auto;
+      }
+
+      .copy-area {
+        background: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        padding: 15px 20px;
+      }
+
+      .copy-area h4 {
+        margin-bottom: 10px;
+        color: #333;
+        font-size: 0.9rem;
+      }
+
+      .copy-item {
+        margin-bottom: 8px;
+        padding: 8px 12px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-family: monospace;
+        font-size: 0.8rem;
+        color: #333;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        user-select: all;
+      }
+
+      .copy-item:hover {
+        background: #e3f2fd;
+        border-color: #4facfe;
+      }
+
+      .copy-item:active {
+        background: #bbdefb;
+      }
+
+      .stats {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin: 30px 0;
+        flex-wrap: wrap;
+      }
+
+      .stat-item {
+        text-align: center;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+        min-width: 120px;
+      }
+
+      .main-stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+
+      .main-stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+      }
+
+      @media (max-width: 768px) {
         .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            font-weight: 700;
+          font-size: 2rem;
         }
 
         .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        .content {
-            padding: 30px;
-        }
-
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 30px;
-            align-items: center;
-            justify-content: center;
-        }
-
-        button {
-            padding: 15px 30px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
-        }
-
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 40px;
-            color: #666;
-            font-size: 1.1rem;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #4facfe;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .coordinate-info {
-            background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 20px;
-            margin-bottom: 30px;
-            border-radius: 12px;
-            border: 2px solid #e1e5e9;
+          font-size: 1rem;
         }
 
         .coord-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 10px;
-        }
-
-        .info-item {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .info-label {
-            font-size: 0.8rem;
-            color: #666;
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-
-        .info-value {
-            font-family: monospace;
-            font-size: 0.9rem;
-            color: #333;
-            background: white;
-            padding: 6px 10px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-        }
-
-        .map-sources-container {
-            display: grid;
-            gap: 30px;
-        }
-
-        .map-source-section {
-            border: 2px solid #e1e5e9;
-            border-radius: 12px;
-            overflow: hidden;
-            background: #f8f9fa;
-        }
-
-        .map-source-header {
-            background: linear-gradient(90deg, #6c757d 0%, #495057 100%);
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .map-source-info {
-            flex: 1;
-        }
-
-        .map-source-name {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .map-source-id {
-            font-family: monospace;
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-
-        .map-source-stats {
-            text-align: center;
-            color: white;
-        }
-
-        .stat-number {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .stat-label {
-            font-size: 0.8rem;
-            opacity: 0.8;
+          grid-template-columns: 1fr;
         }
 
         .tiles-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            padding: 20px;
-        }
-
-        .tile-item {
-            background: white;
-            border-radius: 8px;
-            padding: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .tile-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .tile-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .tile-coord {
-            font-family: monospace;
-            font-size: 0.8rem;
-            color: #666;
-            font-weight: 600;
-        }
-
-        .tile-status {
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
-
-        .status-success {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .status-loading {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-
-        .tile-image {
-            width: 100%;
-            height: 150px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            background: #e9ecef;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #6c757d;
-            overflow: hidden;
-        }
-
-        .tile-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 6px;
-        }
-
-        .error-response {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 4px;
-            padding: 8px;
-            margin-top: 8px;
-            font-family: monospace;
-            font-size: 0.7rem;
-            color: #856404;
-            max-height: 80px;
-            overflow-y: auto;
-        }
-
-        .copy-area {
-            background: #f8f9fa;
-            border-top: 1px solid #e9ecef;
-            padding: 15px 20px;
-        }
-
-        .copy-area h4 {
-            margin-bottom: 10px;
-            color: #333;
-            font-size: 0.9rem;
-        }
-
-        .copy-item {
-            margin-bottom: 8px;
-            padding: 8px 12px;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 0.8rem;
-            color: #333;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            user-select: all;
-        }
-
-        .copy-item:hover {
-            background: #e3f2fd;
-            border-color: #4facfe;
-        }
-
-        .copy-item:active {
-            background: #bbdefb;
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         }
 
         .stats {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin: 30px 0;
-            flex-wrap: wrap;
+          gap: 15px;
         }
 
         .stat-item {
-            text-align: center;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 12px;
-            min-width: 120px;
+          min-width: 100px;
+          padding: 15px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .container {
+          margin: 10px;
+          border-radius: 8px;
         }
 
-        .main-stat-number {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 5px;
+        .header,
+        .content {
+          padding: 20px;
         }
 
-        .main-stat-label {
-            font-size: 0.9rem;
-            opacity: 0.9;
+        .tiles-grid {
+          grid-template-columns: 1fr;
+          padding: 15px;
         }
 
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2rem;
-            }
-
-            .header p {
-                font-size: 1rem;
-            }
-
-            .coord-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .tiles-grid {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            }
-
-            .stats {
-                gap: 15px;
-            }
-
-            .stat-item {
-                min-width: 100px;
-                padding: 15px;
-            }
+        .stats {
+          flex-direction: column;
+          gap: 10px;
         }
-
-        @media (max-width: 480px) {
-            .container {
-                margin: 10px;
-                border-radius: 8px;
-            }
-
-            .header, .content {
-                padding: 20px;
-            }
-
-            .tiles-grid {
-                grid-template-columns: 1fr;
-                padding: 15px;
-            }
-
-            .stats {
-                flex-direction: column;
-                gap: 10px;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="header">
-            <h1>🗺️ 地图瓦片测试页面</h1>
-            <p>Map Tile Test Page - 珠江三角洲地区瓦片测试 (6张连续瓦片)</p>
+      <div class="header">
+        <h1>🗺️ 地图瓦片测试页面</h1>
+        <p>Map Tile Test Page - 珠江三角洲地区瓦片测试 (6张连续瓦片)</p>
+      </div>
+
+      <div class="content">
+        <div class="controls">
+          <button id="loadTiles">
+            🚀 加载所有地图源瓦片 Load All Map Sources
+          </button>
+          <button id="refreshTiles">🔄 刷新 Refresh</button>
         </div>
 
-        <div class="content">
-            <div class="controls">
-                <button id="loadTiles">🚀 加载所有地图源瓦片 Load All Map Sources</button>
-                <button id="refreshTiles">🔄 刷新 Refresh</button>
-            </div>
-
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                正在加载所有地图源的瓦片... Loading tiles from all map sources...
-            </div>
-
-            <div id="coordinateInfo" class="coordinate-info" style="display: none;">
-                <h3>当前测试坐标 Current Test Coordinate</h3>
-                <div class="coord-grid">
-                    <div class="info-item">
-                        <div class="info-label">中心瓦片坐标 Center Tile XYZ</div>
-                        <div class="info-value" id="centerCoord">-</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">经纬度 Lon/Lat</div>
-                        <div class="info-value" id="centerLatLon">-</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">缩放级别 Zoom Level</div>
-                        <div class="info-value" id="zoomLevel">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stats" id="stats" style="display: none;">
-                <div class="stat-item">
-                    <div class="main-stat-number" id="successCount">0</div>
-                    <div class="main-stat-label">成功 Success</div>
-                </div>
-                <div class="stat-item">
-                    <div class="main-stat-number" id="errorCount">0</div>
-                    <div class="main-stat-label">失败 Failed</div>
-                </div>
-                <div class="stat-item">
-                    <div class="main-stat-number" id="totalCount">0</div>
-                    <div class="main-stat-label">总计 Total</div>
-                </div>
-                <div class="stat-item">
-                    <div class="main-stat-number" id="mapSourceCount">0</div>
-                    <div class="main-stat-label">地图源 Sources</div>
-                </div>
-            </div>
-
-            <div id="mapSourcesContainer" class="map-sources-container"></div>
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          正在加载所有地图源的瓦片... Loading tiles from all map sources...
         </div>
+
+        <div id="coordinateInfo" class="coordinate-info" style="display: none">
+          <h3>当前测试坐标 Current Test Coordinate</h3>
+          <div class="coord-grid">
+            <div class="info-item">
+              <div class="info-label">中心瓦片坐标 Center Tile XYZ</div>
+              <div class="info-value" id="centerCoord">-</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">经纬度 Lon/Lat</div>
+              <div class="info-value" id="centerLatLon">-</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">缩放级别 Zoom Level</div>
+              <div class="info-value" id="zoomLevel">-</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats" id="stats" style="display: none">
+          <div class="stat-item">
+            <div class="main-stat-number" id="successCount">0</div>
+            <div class="main-stat-label">成功 Success</div>
+          </div>
+          <div class="stat-item">
+            <div class="main-stat-number" id="errorCount">0</div>
+            <div class="main-stat-label">失败 Failed</div>
+          </div>
+          <div class="stat-item">
+            <div class="main-stat-number" id="totalCount">0</div>
+            <div class="main-stat-label">总计 Total</div>
+          </div>
+          <div class="stat-item">
+            <div class="main-stat-number" id="mapSourceCount">0</div>
+            <div class="main-stat-label">地图源 Sources</div>
+          </div>
+        </div>
+
+        <div id="mapSourcesContainer" class="map-sources-container"></div>
+      </div>
     </div>
 
     <script>
-        // Pearl River Delta coordinates range (珠江三角洲坐标范围)
-        // 经度: 113.0° - 114.5°E, 纬度: 22.3° - 23.5°N
-        const PEARL_RIVER_DELTA = {
-            minLon: 113.0,
-            maxLon: 114.5,
-            minLat: 22.3,
-            maxLat: 23.5
-        };
+      // Pearl River Delta coordinates range (珠江三角洲坐标范围)
+      // 经度: 113.0° - 114.5°E, 纬度: 22.3° - 23.5°N
+      const PEARL_RIVER_DELTA = {
+        minLon: 113.0,
+        maxLon: 114.5,
+        minLat: 22.3,
+        maxLat: 23.5,
+      }
 
-        class MapTileGrid {
-            constructor() {
-                this.mapSources = [];
-                this.currentCenter = null;
-                this.stats = { success: 0, error: 0, total: 0 };
-                this.mapSourceStats = new Map();
-                
-                this.init();
+      class MapTileGrid {
+        constructor() {
+          this.mapSources = []
+          this.currentCenter = null
+          this.stats = { success: 0, error: 0, total: 0 }
+          this.mapSourceStats = new Map()
+
+          this.init()
+        }
+
+        async init() {
+          await this.loadMapSources()
+          this.bindEvents()
+        }
+
+        async loadMapSources() {
+          try {
+            const response = await fetch("/map/list/")
+            const data = await response.json()
+
+            if (data.code === 200 && data.data) {
+              this.mapSources = data.data
+              document.getElementById("mapSourceCount").textContent =
+                this.mapSources.length
+              console.log(
+                `已加载 ${this.mapSources.length} 个地图源:`,
+                this.mapSources.map((s) => s.name)
+              )
+            } else {
+              throw new Error(`API返回错误: ${data.message}`)
             }
+          } catch (error) {
+            console.error("加载地图源失败:", error)
+            this.showError("加载地图源失败: " + error.message)
+          }
+        }
 
-            async init() {
-                await this.loadMapSources();
-                this.bindEvents();
-            }
+        bindEvents() {
+          document.getElementById("loadTiles").addEventListener("click", () => {
+            this.loadAllTiles()
+          })
 
-            async loadMapSources() {
-                try {
-                    const response = await fetch('/map/list/');
-                    const data = await response.json();
-                    
-                    if (data.code === 200 && data.data) {
-                        this.mapSources = data.data;
-                        document.getElementById('mapSourceCount').textContent = this.mapSources.length;
-                        console.log(`已加载 ${this.mapSources.length} 个地图源:`, this.mapSources.map(s => s.name));
-                    } else {
-                        throw new Error(`API返回错误: ${data.message}`);
-                    }
-                } catch (error) {
-                    console.error('加载地图源失败:', error);
-                    this.showError('加载地图源失败: ' + error.message);
-                }
-            }
+          document
+            .getElementById("refreshTiles")
+            .addEventListener("click", () => {
+              this.refreshTiles()
+            })
+        }
 
-            bindEvents() {
-                document.getElementById('loadTiles').addEventListener('click', () => {
-                    this.loadAllTiles();
-                });
+        // Convert lat/lon to tile coordinates (瓦片坐标转换)
+        lonLatToTile(lon, lat, zoom) {
+          const x = Math.floor(((lon + 180) / 360) * Math.pow(2, zoom))
+          const y = Math.floor(
+            ((1 -
+              Math.log(
+                Math.tan((lat * Math.PI) / 180) +
+                  1 / Math.cos((lat * Math.PI) / 180)
+              ) /
+                Math.PI) /
+              2) *
+              Math.pow(2, zoom)
+          )
+          return { x, y, z: zoom }
+        }
 
-                document.getElementById('refreshTiles').addEventListener('click', () => {
-                    this.refreshTiles();
-                });
-            }
+        // Generate random coordinates within Pearl River Delta (珠江三角洲随机坐标)
+        generateRandomCoordinates() {
+          const lon =
+            Math.random() *
+              (PEARL_RIVER_DELTA.maxLon - PEARL_RIVER_DELTA.minLon) +
+            PEARL_RIVER_DELTA.minLon
+          const lat =
+            Math.random() *
+              (PEARL_RIVER_DELTA.maxLat - PEARL_RIVER_DELTA.minLat) +
+            PEARL_RIVER_DELTA.minLat
+          return { lon, lat }
+        }
 
-            // Convert lat/lon to tile coordinates (瓦片坐标转换)
-            lonLatToTile(lon, lat, zoom) {
-                const x = Math.floor((lon + 180) / 360 * Math.pow(2, zoom));
-                const y = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 
-                    1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom));
-                return { x, y, z: zoom };
-            }
+        // Generate 6 adjacent tiles around center coordinate (生成围绕中心坐标的6个相邻瓦片)
+        generateAdjacentTiles(centerX, centerY, zoom) {
+          return [
+            { x: centerX - 1, y: centerY - 1, z: zoom }, // 左上
+            { x: centerX, y: centerY - 1, z: zoom }, // 中上
+            { x: centerX + 1, y: centerY - 1, z: zoom }, // 右上
+            { x: centerX - 1, y: centerY, z: zoom }, // 左中
+            { x: centerX, y: centerY, z: zoom }, // 中心
+            { x: centerX + 1, y: centerY, z: zoom }, // 右中
+          ]
+        }
 
-            // Generate random coordinates within Pearl River Delta (珠江三角洲随机坐标)
-            generateRandomCoordinates() {
-                const lon = Math.random() * (PEARL_RIVER_DELTA.maxLon - PEARL_RIVER_DELTA.minLon) + PEARL_RIVER_DELTA.minLon;
-                const lat = Math.random() * (PEARL_RIVER_DELTA.maxLat - PEARL_RIVER_DELTA.minLat) + PEARL_RIVER_DELTA.minLat;
-                return { lon, lat };
-            }
+        async loadAllTiles() {
+          if (this.mapSources.length === 0) {
+            alert("未找到可用的地图源 No map sources available")
+            return
+          }
 
-            // Generate 6 adjacent tiles around center coordinate (生成围绕中心坐标的6个相邻瓦片)
-            generateAdjacentTiles(centerX, centerY, zoom) {
-                return [
-                    { x: centerX - 1, y: centerY - 1, z: zoom }, // 左上
-                    { x: centerX, y: centerY - 1, z: zoom },     // 中上
-                    { x: centerX + 1, y: centerY - 1, z: zoom }, // 右上
-                    { x: centerX - 1, y: centerY, z: zoom },     // 左中
-                    { x: centerX, y: centerY, z: zoom },         // 中心
-                    { x: centerX + 1, y: centerY, z: zoom }      // 右中
-                ];
-            }
+          this.showLoading(true)
+          this.resetStats()
+          this.clearContainer()
 
-            async loadAllTiles() {
-                if (this.mapSources.length === 0) {
-                    alert('未找到可用的地图源 No map sources available');
-                    return;
-                }
+          // Generate random center coordinate (生成随机中心坐标)
+          const coords = this.generateRandomCoordinates()
+          const zoom = Math.floor(Math.random() * 4) + 11 // zoom 11-14
+          const centerTile = this.lonLatToTile(coords.lon, coords.lat, zoom)
 
-                this.showLoading(true);
-                this.resetStats();
-                this.clearContainer();
+          this.currentCenter = {
+            ...centerTile,
+            lon: coords.lon,
+            lat: coords.lat,
+          }
 
-                // Generate random center coordinate (生成随机中心坐标)
-                const coords = this.generateRandomCoordinates();
-                const zoom = Math.floor(Math.random() * 4) + 11; // zoom 11-14
-                const centerTile = this.lonLatToTile(coords.lon, coords.lat, zoom);
-                
-                this.currentCenter = {
-                    ...centerTile,
-                    lon: coords.lon,
-                    lat: coords.lat
-                };
+          // Update coordinate info
+          this.updateCoordinateInfo()
 
-                // Update coordinate info
-                this.updateCoordinateInfo();
+          // Create sections for each map source
+          for (const mapSource of this.mapSources) {
+            await this.createMapSourceSection(mapSource)
+          }
 
-                // Create sections for each map source
-                for (const mapSource of this.mapSources) {
-                    await this.createMapSourceSection(mapSource);
-                }
+          this.showLoading(false)
+          this.updateStats()
+        }
 
-                this.showLoading(false);
-                this.updateStats();
-            }
+        updateCoordinateInfo() {
+          document.getElementById(
+            "centerCoord"
+          ).textContent = `${this.currentCenter.x}, ${this.currentCenter.y}, ${this.currentCenter.z}`
+          document.getElementById(
+            "centerLatLon"
+          ).textContent = `${this.currentCenter.lon.toFixed(
+            6
+          )}, ${this.currentCenter.lat.toFixed(6)}`
+          document.getElementById("zoomLevel").textContent =
+            this.currentCenter.z
+          document.getElementById("coordinateInfo").style.display = "block"
+        }
 
-            updateCoordinateInfo() {
-                document.getElementById('centerCoord').textContent = 
-                    `${this.currentCenter.x}, ${this.currentCenter.y}, ${this.currentCenter.z}`;
-                document.getElementById('centerLatLon').textContent = 
-                    `${this.currentCenter.lon.toFixed(6)}, ${this.currentCenter.lat.toFixed(6)}`;
-                document.getElementById('zoomLevel').textContent = this.currentCenter.z;
-                document.getElementById('coordinateInfo').style.display = 'block';
-            }
+        async createMapSourceSection(mapSource) {
+          const section = document.createElement("div")
+          section.className = "map-source-section"
 
-            async createMapSourceSection(mapSource) {
-                const section = document.createElement('div');
-                section.className = 'map-source-section';
-                
-                const sourceStats = { success: 0, error: 0, total: 6 };
-                this.mapSourceStats.set(mapSource.id, sourceStats);
+          const sourceStats = { success: 0, error: 0, total: 6 }
+          this.mapSourceStats.set(mapSource.id, sourceStats)
 
-                section.innerHTML = `
+          section.innerHTML = `
                     <div class="map-source-header">
                         <div class="map-source-info">
                             <div class="map-source-name">${mapSource.name}</div>
@@ -598,80 +631,84 @@
                     <div class="tiles-grid" id="tiles-${mapSource.id}"></div>
                     <div class="copy-area">
                         <h4>🔗 API链接模板 API Link Templates:</h4>
-                        <div class="copy-item" onclick="this.select(); document.execCommand('copy');">${window.location.origin}/map/${mapSource.id}/{x}/{y}/{z}/</div>
-                        <div class="copy-item" onclick="this.select(); document.execCommand('copy');">${window.location.origin}/map/${mapSource.id}/${this.currentCenter.x}/${this.currentCenter.y}/${this.currentCenter.z}/</div>
+                        <div class="copy-item" onclick="this.select(); document.execCommand('copy');">${window.location.origin}/map/${mapSource.id}/{z}/{x}/{y}/</div>
+                        <div class="copy-item" onclick="this.select(); document.execCommand('copy');">${window.location.origin}/map/${mapSource.id}/${this.currentCenter.z}/${this.currentCenter.x}/${this.currentCenter.y}/</div>
                     </div>
-                `;
+                `
 
-                document.getElementById('mapSourcesContainer').appendChild(section);
+          document.getElementById("mapSourcesContainer").appendChild(section)
 
-                // Generate and load 6 adjacent tiles
-                const tiles = this.generateAdjacentTiles(
-                    this.currentCenter.x, 
-                    this.currentCenter.y, 
-                    this.currentCenter.z
-                );
+          // Generate and load 6 adjacent tiles
+          const tiles = this.generateAdjacentTiles(
+            this.currentCenter.x,
+            this.currentCenter.y,
+            this.currentCenter.z
+          )
 
-                await this.loadTilesForMapSource(mapSource, tiles);
-            }
+          await this.loadTilesForMapSource(mapSource, tiles)
+        }
 
-            async loadTilesForMapSource(mapSource, tiles) {
-                const gridId = `tiles-${mapSource.id}`;
-                const promises = tiles.map(tile => 
-                    this.loadSingleTile(mapSource, tile, gridId)
-                );
-                await Promise.allSettled(promises);
-            }
+        async loadTilesForMapSource(mapSource, tiles) {
+          const gridId = `tiles-${mapSource.id}`
+          const promises = tiles.map((tile) =>
+            this.loadSingleTile(mapSource, tile, gridId)
+          )
+          await Promise.allSettled(promises)
+        }
 
-            async loadSingleTile(mapSource, tile, gridId) {
-                const tileElement = this.createTileElement(mapSource, tile);
-                document.getElementById(gridId).appendChild(tileElement);
+        async loadSingleTile(mapSource, tile, gridId) {
+          const tileElement = this.createTileElement(mapSource, tile)
+          document.getElementById(gridId).appendChild(tileElement)
 
-                try {
-                    const url = `/map/${mapSource.id}/${tile.x}/${tile.y}/${tile.z}/`;
-                    const response = await fetch(url);
-                    
-                    const contentType = response.headers.get('content-type');
-                    
-                    if (response.ok && contentType && contentType.startsWith('image/')) {
-                        // Successfully loaded image
-                        const blob = await response.blob();
-                        const imageUrl = URL.createObjectURL(blob);
-                        this.updateTileSuccess(tileElement, imageUrl);
-                        this.stats.success++;
-                        this.mapSourceStats.get(mapSource.id).success++;
-                    } else {
-                        // Not an image or failed request
-                        let errorText = '';
-                        try {
-                            if (contentType && contentType.includes('application/json')) {
-                                const errorData = await response.json();
-                                errorText = JSON.stringify(errorData, null, 2);
-                            } else {
-                                errorText = await response.text();
-                            }
-                        } catch (e) {
-                            errorText = `HTTP ${response.status} ${response.statusText}`;
-                        }
-                        this.updateTileError(tileElement, errorText);
-                        this.stats.error++;
-                        this.mapSourceStats.get(mapSource.id).error++;
-                    }
-                } catch (error) {
-                    this.updateTileError(tileElement, error.message);
-                    this.stats.error++;
-                    this.mapSourceStats.get(mapSource.id).error++;
+          try {
+            const url = `/map/${mapSource.id}/${tile.z}/${tile.x}/${tile.y}/`
+            const response = await fetch(url)
+
+            const contentType = response.headers.get("content-type")
+
+            if (
+              response.ok &&
+              contentType &&
+              contentType.startsWith("image/")
+            ) {
+              // Successfully loaded image
+              const blob = await response.blob()
+              const imageUrl = URL.createObjectURL(blob)
+              this.updateTileSuccess(tileElement, imageUrl)
+              this.stats.success++
+              this.mapSourceStats.get(mapSource.id).success++
+            } else {
+              // Not an image or failed request
+              let errorText = ""
+              try {
+                if (contentType && contentType.includes("application/json")) {
+                  const errorData = await response.json()
+                  errorText = JSON.stringify(errorData, null, 2)
+                } else {
+                  errorText = await response.text()
                 }
-                
-                this.stats.total++;
-                this.updateStats();
-                this.updateMapSourceStats(mapSource.id);
+              } catch (e) {
+                errorText = `HTTP ${response.status} ${response.statusText}`
+              }
+              this.updateTileError(tileElement, errorText)
+              this.stats.error++
+              this.mapSourceStats.get(mapSource.id).error++
             }
+          } catch (error) {
+            this.updateTileError(tileElement, error.message)
+            this.stats.error++
+            this.mapSourceStats.get(mapSource.id).error++
+          }
 
-            createTileElement(mapSource, tile) {
-                const element = document.createElement('div');
-                element.className = 'tile-item';
-                element.innerHTML = `
+          this.stats.total++
+          this.updateStats()
+          this.updateMapSourceStats(mapSource.id)
+        }
+
+        createTileElement(mapSource, tile) {
+          const element = document.createElement("div")
+          element.className = "tile-item"
+          element.innerHTML = `
                     <div class="tile-header">
                         <div class="tile-coord">${tile.x},${tile.y},${tile.z}</div>
                         <div class="tile-status status-loading">加载中</div>
@@ -679,85 +716,89 @@
                     <div class="tile-image">
                         <div>加载中... Loading...</div>
                     </div>
-                `;
-                return element;
-            }
-
-            updateTileSuccess(element, imageUrl) {
-                const statusEl = element.querySelector('.tile-status');
-                const imageEl = element.querySelector('.tile-image');
-                
-                statusEl.textContent = '✅';
-                statusEl.className = 'tile-status status-success';
-                
-                imageEl.innerHTML = `<img src="${imageUrl}" alt="地图瓦片" loading="lazy">`;
-            }
-
-            updateTileError(element, errorText) {
-                const statusEl = element.querySelector('.tile-status');
-                const imageEl = element.querySelector('.tile-image');
-                
-                statusEl.textContent = '❌';
-                statusEl.className = 'tile-status status-error';
-                
-                imageEl.innerHTML = `<div style="color: #dc3545; text-align: center; padding: 10px; font-size: 0.8rem;">❌<br>失败</div>`;
-                
-                // Add error details
-                const errorDiv = document.createElement('div');
-                errorDiv.innerHTML = `<div class="error-response">${errorText}</div>`;
-                element.appendChild(errorDiv);
-            }
-
-            updateMapSourceStats(mapSourceId) {
-                const stats = this.mapSourceStats.get(mapSourceId);
-                const element = document.getElementById(`success-${mapSourceId}`);
-                if (element) {
-                    element.textContent = stats.success;
-                }
-            }
-
-            refreshTiles() {
-                if (this.currentCenter) {
-                    this.loadAllTiles();
-                }
-            }
-
-            showLoading(show) {
-                document.getElementById('loading').style.display = show ? 'block' : 'none';
-                document.getElementById('loadTiles').disabled = show;
-                document.getElementById('refreshTiles').disabled = show;
-            }
-
-            resetStats() {
-                this.stats = { success: 0, error: 0, total: 0 };
-                this.mapSourceStats.clear();
-                this.updateStats();
-            }
-
-            updateStats() {
-                document.getElementById('successCount').textContent = this.stats.success;
-                document.getElementById('errorCount').textContent = this.stats.error;
-                document.getElementById('totalCount').textContent = this.stats.total;
-                document.getElementById('stats').style.display = this.stats.total > 0 ? 'flex' : 'none';
-            }
-
-            clearContainer() {
-                document.getElementById('mapSourcesContainer').innerHTML = '';
-                document.getElementById('coordinateInfo').style.display = 'none';
-            }
-
-            showError(message) {
-                const container = document.getElementById('mapSourcesContainer');
-                container.innerHTML = `<div style="padding: 40px; text-align: center; color: #dc3545; font-size: 1.1rem;">
-                    ❌ 错误: ${message}
-                </div>`;
-            }
+                `
+          return element
         }
 
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', () => {
-            new MapTileGrid();
-        });
+        updateTileSuccess(element, imageUrl) {
+          const statusEl = element.querySelector(".tile-status")
+          const imageEl = element.querySelector(".tile-image")
+
+          statusEl.textContent = "✅"
+          statusEl.className = "tile-status status-success"
+
+          imageEl.innerHTML = `<img src="${imageUrl}" alt="地图瓦片" loading="lazy">`
+        }
+
+        updateTileError(element, errorText) {
+          const statusEl = element.querySelector(".tile-status")
+          const imageEl = element.querySelector(".tile-image")
+
+          statusEl.textContent = "❌"
+          statusEl.className = "tile-status status-error"
+
+          imageEl.innerHTML = `<div style="color: #dc3545; text-align: center; padding: 10px; font-size: 0.8rem;">❌<br>失败</div>`
+
+          // Add error details
+          const errorDiv = document.createElement("div")
+          errorDiv.innerHTML = `<div class="error-response">${errorText}</div>`
+          element.appendChild(errorDiv)
+        }
+
+        updateMapSourceStats(mapSourceId) {
+          const stats = this.mapSourceStats.get(mapSourceId)
+          const element = document.getElementById(`success-${mapSourceId}`)
+          if (element) {
+            element.textContent = stats.success
+          }
+        }
+
+        refreshTiles() {
+          if (this.currentCenter) {
+            this.loadAllTiles()
+          }
+        }
+
+        showLoading(show) {
+          document.getElementById("loading").style.display = show
+            ? "block"
+            : "none"
+          document.getElementById("loadTiles").disabled = show
+          document.getElementById("refreshTiles").disabled = show
+        }
+
+        resetStats() {
+          this.stats = { success: 0, error: 0, total: 0 }
+          this.mapSourceStats.clear()
+          this.updateStats()
+        }
+
+        updateStats() {
+          document.getElementById("successCount").textContent =
+            this.stats.success
+          document.getElementById("errorCount").textContent = this.stats.error
+          document.getElementById("totalCount").textContent = this.stats.total
+          document.getElementById("stats").style.display =
+            this.stats.total > 0 ? "flex" : "none"
+        }
+
+        clearContainer() {
+          document.getElementById("mapSourcesContainer").innerHTML = ""
+          document.getElementById("coordinateInfo").style.display = "none"
+        }
+
+        showError(message) {
+          const container = document.getElementById("mapSourcesContainer")
+          container.innerHTML = `<div style="padding: 40px; text-align: center; color: #dc3545; font-size: 1.1rem;">
+                    ❌ 错误: ${message}
+                </div>`
+        }
+      }
+
+      // Initialize the application
+      document.addEventListener("DOMContentLoaded", () => {
+        new MapTileGrid()
+      })
     </script>
-</body>
+  </body>
 </html>

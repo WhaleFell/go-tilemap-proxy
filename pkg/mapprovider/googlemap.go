@@ -100,12 +100,12 @@ func (gmp *GoogleMapProvider) GetMapPic(x, y, z int) (*http.Response, error) {
 	return response, nil
 }
 
-var GmapPureSatellite = &GoogleMapProvider{
-	// Name:           "Google Pure Satellite",
-	// CoordinateType: "WGJ84",
+// ===== Provider =====
+
+var GmapSatellite = &GoogleMapProvider{
 	TileMapMetadata: &TileMapMetadata{
-		Name:           "Google Pure Satellite",
-		ID:             "google_pure_satellite",
+		Name:           "Google Satellite",
+		ID:             "google_satellite",
 		MinZoom:        0,
 		MaxZoom:        20,
 		MapSize:        MapSize256,
@@ -113,14 +113,16 @@ var GmapPureSatellite = &GoogleMapProvider{
 		ContentType:    MapContentTypePNG,
 		CoordinateType: CoordinateTypeWGS84,
 	},
-
-	BaseURL: "https://www.google.com/maps/vt?lyrs=s@189&x={x}&y={y}&z={z}",
+	// lyrs=(m: 路线图, t: 地形图, p: 带标签地形图, s: 卫星图, y: 带标签卫星图, h: 标签层)
+	// gl=CN (GCJ02 offset)
+	// hl=zh-CN
+	BaseURL: "https://www.google.com/maps/vt?lyrs=s@189&x={x}&y={y}&z={z}&hl=zh-CN",
 }
 
-var GmapPureSatellite2 = &GoogleMapProvider{
+var GmapSatelliteWithLable = &GoogleMapProvider{
 	TileMapMetadata: &TileMapMetadata{
-		Name:           "Google Pure Satellite 2",
-		ID:             "google_pure_satellite_2",
+		Name:           "Google Satellite With Label",
+		ID:             "google_satellite_with_label",
 		MinZoom:        0,
 		MaxZoom:        20,
 		MapSize:        MapSize256,
@@ -128,7 +130,35 @@ var GmapPureSatellite2 = &GoogleMapProvider{
 		ContentType:    MapContentTypePNG,
 		CoordinateType: CoordinateTypeWGS84,
 	},
-	BaseURL: "https://khms{serverpart:1,2,3}.google.com/kh/v=979?x={x}&y={y}&z={z}",
+	BaseURL: "https://www.google.com/maps/vt?lyrs=y@189&x={x}&y={y}&z={z}&hl=zh-CN",
+}
+
+var GmapSatelliteGCJ02 = &GoogleMapProvider{
+	TileMapMetadata: &TileMapMetadata{
+		Name:           "Google Satellite GCJ02",
+		ID:             "google_satellite_gcj02",
+		MinZoom:        0,
+		MaxZoom:        20,
+		MapSize:        MapSize256,
+		MapType:        MapTypeRaster,
+		ContentType:    MapContentTypePNG,
+		CoordinateType: CoordinateTypeGCJ02,
+	},
+	BaseURL: "https://www.google.com/maps/vt?lyrs=s@189&gl=CN&x={x}&y={y}&z={z}&hl=zh-CN",
+}
+
+var GmapSatelliteGCJ02WithLable = &GoogleMapProvider{
+	TileMapMetadata: &TileMapMetadata{
+		Name:           "Google Satellite GCJ02 With Label",
+		ID:             "google_satellite_gcj02_with_label",
+		MinZoom:        0,
+		MaxZoom:        20,
+		MapSize:        MapSize256,
+		MapType:        MapTypeRaster,
+		ContentType:    MapContentTypePNG,
+		CoordinateType: CoordinateTypeGCJ02,
+	},
+	BaseURL: "https://www.google.com/maps/vt?lyrs=y@189&gl=CN&x={x}&y={y}&z={z}&hl=zh-CN",
 }
 
 var OpenStreetMapStandard = &GoogleMapProvider{

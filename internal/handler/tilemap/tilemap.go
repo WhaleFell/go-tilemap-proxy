@@ -41,7 +41,7 @@ func TileMapSourceList(c echo.Context) error {
 // TileMapProxy handles tile map requests
 // It serves as a proxy for tile map services, allowing users to fetch tiles from various sources.
 // It provides unified Google XYZ tile map protocol.
-// format: /:mapID/:x/:y/:z?cache=<boolean>
+// format: /:mapID/:z/:x/:y?cache=<boolean>
 // mapType: the type of map, e.g. "google", "osm", etc.
 // x, y, z: the tile coordinates
 // cache: whether to use exist tile cache, default is true

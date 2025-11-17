@@ -5,23 +5,44 @@ import "log"
 // map source
 
 var MapSourceProviders = []TileMapProvider{
-	GmapPureSatellite,
-	// GmapPureSatellite2,
+
+	// Google satellite (WGJ84)
+	GmapSatellite,
+	// 中国路网乱
+	GmapSatelliteWithLable,
+	// GCJ02 offset version
+	GmapSatelliteGCJ02,
+	GmapSatelliteGCJ02WithLable,
+
+	// Openstreetmap (WGJ84)
 	OpenStreetMapStandard,
 	OpenStreetMapPublicGPS,
-	TraceStrackTopoMap,
-	ArcgisSatelite,
-	BingSateliteMap,
-	// GoogleHybridOffsetMap,
 	OpenStreetMapCyclOSM,
+	TraceStrackTopoMap,
+
+	// ArcGIS satellite (WGJ84)
+	ArcgisSatelite,
+
+	// BingSatelite (WGJ84)
+	BingSateliteMap,
+
+	// Amap Road map 高德地图 (WGJ84, coordinate calibration)
 	AmapRoadMap,
+
+	// TianDiTu 天地图 (CGCS2000, approximate to WGS84)
 	TianDiTuSatellite,
 	TianDiTuRoad,
-	// MapHereSatelite,
-	// MapTilerContour,
+
+	// Tencent 腾讯地图 (GCJ02)
 	TencentMapRoad,
 	TencentMapSatellite,
+
+	// Huawei 华为花瓣地图 (图寻接口)
 	TuxunHuaweiStreetMap,
+
+	// lose efficity 失效
+	// MapHereSatelite,
+	// MapTilerContour,
 }
 
 // use struct+slice to prevent the order of map source.

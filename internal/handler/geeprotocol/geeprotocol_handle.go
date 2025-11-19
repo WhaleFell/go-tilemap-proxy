@@ -7,6 +7,7 @@ import (
 	"go-map-proxy/pkg/mapprovider"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -25,13 +26,9 @@ func NewGEEHandler(geeClient *mapprovider.GoogleEarthEngineProvider) *GEEHandler
 
 // GEEHandle handles requests for Google Earth Engine protocol
 // GEE 协议请求处理器
-// Route: `/gee/:path` - forwards all requests to GEE server with SessionID cookie
-// 路由: `/gee/:path` - 将所有请求转发到 GEE 服务器并添加 SessionID cookie
+// Route: `/gee/*` - forwards all requests to GEE server with SessionID cookie
+// 路由: `/gee/*` - 将所有请求转发到 GEE 服务器并添加 SessionID cookie
 func (h *GEEHandler) GEEHandle(c echo.Context) error {
-
-	// Get the full path after /gee/
-	// 获取 /gee/ 后的完整路径
-	// path := c.Param("path")
 	// Get the full path after /gee/
 	// 获取 /gee/ 后的完整路径
 	path := c.Request().URL.Path
@@ -55,6 +52,41 @@ func (h *GEEHandler) GEEHandle(c echo.Context) error {
 		path = path + "?" + c.Request().URL.RawQuery
 	}
 
+	logger.Infof("GEE proxy request: %s", path)
+
+	// Special handling for /geauth?ct=pro requests
+	// 特殊处理 /geauth?ct=pro 请求
+	if strings.Contains(path, "geauth") {
+		logger.Infof("Handling GEE authentication request: %s", path)
+
+		// Get authentication response bytes directly
+		// 直接获取认证响应字节
+		authBytes, err := h.GEEClient.GetAuthResponseBytes()
+		if err != nil {
+			logger.Errorf("Failed to get GEE auth response: %v", err)
+			return c.JSON(http.StatusInternalServerError, model.BaseAPIResponse[any]{
+				Code:    http.StatusInternalServerError,
+				Message: fmt.Sprintf("Failed to get GEE auth response: %v", err),
+				Data:    nil,
+			})
+		}
+
+		// Return raw authentication response bytes
+		// 返回原始认证响应字节
+		c.Response().Header().Set("Content-Type", "application/octet-stream")
+		c.Response().WriteHeader(http.StatusOK)
+		_, err = c.Response().Write(authBytes)
+		if err != nil {
+			logger.Errorf("Failed to write auth response: %v", err)
+			return err
+		}
+
+		logger.Debugf("GEE auth response sent (length: %d bytes)", len(authBytes))
+		return nil
+	}
+
+	// For other requests, forward to GEE server
+	// 对于其他请求，转发到 GEE 服务器
 	method := c.Request().Method
 	body := c.Request().Body
 

@@ -269,3 +269,50 @@ func (gee *GoogleEarthEngineProvider) GetSessionID() string {
 	defer gee.mu.RUnlock()
 	return gee.sessionID
 }
+
+// GetAuthResponseBytes performs authentication and returns the raw response bytes
+// 执行认证并返回原始响应字节
+func (gee *GoogleEarthEngineProvider) GetAuthResponseBytes() (respBody []byte, err error) {
+	// Convert hex string to bytes
+	// 将十六进制字符串转换为字节
+	authBody, err := hex.DecodeString(gee.AuthBodyHexString)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode auth body hex string: %w", err)
+	}
+
+	// Construct full auth URL
+	// 构造完整的认证 URL
+	authURL := gee.BaseURL + gee.AuthURL
+
+	// Create POST request
+	// 创建 POST 请求
+	req, err := http.NewRequest(http.MethodPost, authURL, bytes.NewReader(authBody))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create auth request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/octet-stream")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+
+	// Execute request
+	// 执行请求
+	resp, err := gee.Client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute auth request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("auth request failed with status code: %d", resp.StatusCode)
+	}
+
+	// Read and return response body
+	// 读取并返回响应体
+	respBody, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read auth response body: %w", err)
+	}
+
+	logger.Debugf("GEE auth response bytes obtained (length: %d)", len(respBody))
+	return respBody, nil
+}

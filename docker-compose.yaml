@@ -1,15 +1,3 @@
-# networks:
-#   wf-net:
-#     name: wf-net
-
-# volumes:
-#   wf-data:
-#       # driver: local
-#       # driver_opts:
-#       # type: none
-#       # device: /home/yourname/wf-data
-#       # o: bind
-
 services:
   # 后端服务 | Backend service
   map-server:
@@ -27,10 +15,7 @@ services:
     restart: always
 
     # ports:
-    #   - "8076:8076"
-
-    # environment:
-    #   - NODE_ENV=production
+    #  - "8076:8076"
 
     extra_hosts:
       # set host=host.docker.internal in .env on linux for xdebug

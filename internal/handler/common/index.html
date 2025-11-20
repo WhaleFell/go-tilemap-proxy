@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>两步路图片地图服务</title>
+    <style>
+        :root {
+            --forest: #1f4c3c;
+            --leaf: #5ea673;
+            --cloud: #ecf5ef;
+            --text: #0f1f19;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: radial-gradient(circle at top, rgba(236, 245, 239, 0.95), rgba(161, 201, 174, 0.9)), url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=80') center/cover fixed;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .panel {
+            max-width: 860px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 28px;
+            padding: clamp(2rem, 6vw, 4rem);
+            box-shadow: 0 35px 60px rgba(19, 62, 46, 0.25);
+        }
+
+        h1 {
+            font-size: clamp(2.8rem, 7vw, 4.8rem);
+            color: var(--forest);
+            margin-bottom: 1rem;
+            letter-spacing: 0.1em;
+        }
+
+        .lifeline {
+            font-size: clamp(1.6rem, 4vw, 2.4rem);
+            font-weight: 700;
+            color: var(--leaf);
+            margin: 0 0 2rem;
+        }
+
+        .scenes {
+            font-size: clamp(1.2rem, 3vw, 1.7rem);
+            line-height: 1.8;
+            margin: 0 auto 2.5rem;
+            color: #184231;
+        }
+
+        .warning {
+            font-size: clamp(1.4rem, 3vw, 2rem);
+            font-weight: 800;
+            color: #c0392b;
+            margin-bottom: 2rem;
+        }
+
+        .countdown {
+            font-size: clamp(1.2rem, 4vw, 2.2rem);
+            color: var(--forest);
+        }
+
+        .link-btn {
+            margin-top: 1.5rem;
+            display: inline-block;
+            padding: 0.9rem 2.4rem;
+            border-radius: 999px;
+            background: var(--forest);
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.1rem;
+            letter-spacing: 0.08em;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="panel">
+        <h1>两步路图片地图服务</h1>
+        <p class="lifeline">秦岭鳌太 · 梅里雪山 · 罗布泊 —— 驴友唯一的生命线</p>
+        <p class="scenes">
+            在云海雪脊、冰川裂缝、无垠沙海中，驴友依靠这张地图定位方向、共享轨迹、守护生命。
+            This eco-colored trail map protects every step you take.
+        </p>
+        <p class="warning">严禁攻击此地图 · Do Not Attack</p>
+        <p class="countdown">10 秒后将跳转至官方入口 https://www.2bulu.com/</p>
+        <a class="link-btn" href="https://www.2bulu.com/">立即进入</a>
+    </section>
+
+    <script>
+        // Countdown redirect logic
+        // 倒计时跳转逻辑
+        const targetUrl = "https://www.2bulu.com/";
+        let remaining = 10;
+        const text = document.querySelector(".countdown");
+        const timer = setInterval(() => {
+            remaining -= 1;
+            if (remaining <= 0) {
+                clearInterval(timer);
+                window.location.href = targetUrl;
+                return;
+            }
+            text.textContent = `${remaining} 秒后将跳转至官方入口 https://www.2bulu.com/`;
+        }, 1000);
+    </script>
+</body>
+</html>

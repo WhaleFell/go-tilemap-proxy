@@ -14,6 +14,8 @@ func RegisterHandlers(echo *echo.Echo) {
 	// Register all handlers here
 	// e.g. echo.GET("/", common.Index)
 
+	// MUST add trailing slash
+
 	echo.GET("/", common.Index)
 	echo.GET("/health/", common.HealthCheck)
 	echo.GET("/systemInfo/", common.SystemInfo)
@@ -33,7 +35,7 @@ func RegisterHandlers(echo *echo.Echo) {
 
 	// GEE protocol proxy server
 	// GEE 协议代理服务器
-	geeGroup := echo.Group("/gee")
+	geeGroup := echo.Group("/gee/")
 	geeGroup.Any("/:path", geeHandler.GEEHandle)
 
 	echo.Any("/*", geeHandler.GEEHandle)

@@ -52,8 +52,6 @@ func (h *GEEHandler) GEEHandle(c echo.Context) error {
 		path = path + "?" + c.Request().URL.RawQuery
 	}
 
-	logger.Infof("GEE proxy request: %s", path)
-
 	// Special handling for /geauth?ct=pro requests
 	// 特殊处理 /geauth?ct=pro 请求
 	if strings.Contains(path, "geauth") {

@@ -19,6 +19,7 @@ var MapSourceProviders = []TileMapProvider{
 	OpenStreetMapPublicGPS,
 	OpenStreetMapCyclOSM,
 	TraceStrackTopoMap,
+	OpenRailwayMap,
 
 	// ArcGIS satellite (WGJ84)
 	ArcgisSatelite,

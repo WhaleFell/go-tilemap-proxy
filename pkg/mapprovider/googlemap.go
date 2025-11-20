@@ -440,3 +440,20 @@ var TuxunHuaweiStreetMap = &GoogleMapProvider{
 	BaseURL:      "https://maprastertile-drcn.dbankcdn.cn/display-service/v1/online-render/getTile/25.06.13.20/{z}/{x}/{y}/?language=zh&p=46&scale=2&mapType=ROADMAP&presetStyleId=standard&pattern=JPG&key=DAEDANitav6P7Q0lWzCzKkLErbrJG4kS1u%2FCpEe5ZyxW5u0nSkb40bJ%2BYAugRN03fhf0BszLS1rCrzAogRHDZkxaMrloaHPQGO6LNg==",
 	ReferenceURL: "https://tuxun.fun/",
 }
+
+// Openrailwaymap
+// https://tiles.openrailwaymap.org/standard/11/1634/866.png
+var OpenRailwayMap = &GoogleMapProvider{
+	TileMapMetadata: &TileMapMetadata{
+		Name:           "OpenRailwayMap",
+		ID:             "open_railway_map",
+		MinZoom:        2,
+		MaxZoom:        18,
+		MapSize:        MapSize512,
+		MapType:        MapTypeRaster,
+		ContentType:    MapContentTypePNG,
+		CoordinateType: CoordinateTypeWGS84,
+	},
+	BaseURL:      "https://tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png",
+	ReferenceURL: "https://www.openrailwaymap.org/",
+}

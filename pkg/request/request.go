@@ -98,6 +98,8 @@ func NewHTTPClient(config *HTTPClientConfig) *http.Client {
 
 			// ExpectContinueTimeout: 1 * time.Second,
 
+			ResponseHeaderTimeout: timeout,
+
 			DisableKeepAlives: false,
 		},
 	}

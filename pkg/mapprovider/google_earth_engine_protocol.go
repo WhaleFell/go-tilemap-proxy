@@ -19,8 +19,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
-	"strings"
 	"sync"
 	"time"
 )
@@ -44,33 +42,6 @@ type GoogleEarthEngineProvider struct {
 	sessionID string
 	mu        sync.RWMutex // Protect sessionID from concurrent access
 	stopChan  chan struct{}
-}
-
-// urlJoin Joins the base URL with the given path elements,
-// preserving the query and fragment parts of the base URL.
-// 拼接基础 URL 与若干路径片段，保持 Query、Fragment 不变。
-func UrlJoin(base string, elems ...string) (string, error) {
-	if base == "" {
-		return "", nil
-	}
-
-	u, err := url.Parse(base)
-	if err != nil {
-		return "", err
-	}
-
-	// Join Path
-	all := []string{u.Path}
-	all = append(all, elems...)
-	u.Path = path.Join(all...)
-
-	// path.Join will remove trailing slashes.
-	// path.Join 会清掉尾部斜杠，如需保留，手动检测补上
-	if strings.HasSuffix(all[len(all)-1], "/") && !strings.HasSuffix(u.Path, "/") {
-		u.Path += "/"
-	}
-
-	return u.String(), nil
 }
 
 // NewGoogleEarthEngineProvider creates a new GEE provider instance
@@ -244,7 +215,7 @@ func (gee *GoogleEarthEngineProvider) Stop() {
 func (gee *GoogleEarthEngineProvider) GEERelay(ctx context.Context, path, method string, body io.Reader) (resp *http.Response, err error) {
 	// Construct full URL
 	// 构造完整 URL
-	fullURL, err := UrlJoin(gee.BaseURL, path)
+	fullURL, err := url.JoinPath(gee.BaseURL, path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to construct full URL: %w", err)
 	}
@@ -315,7 +286,10 @@ func (gee *GoogleEarthEngineProvider) GetAuthResponseBytes() (respBody []byte, e
 
 	// Construct full auth URL
 	// 构造完整的认证 URL
-	authURL := gee.BaseURL + gee.AuthURL
+	authURL, err := url.JoinPath(gee.BaseURL, gee.AuthURL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to construct full auth URL: %w", err)
+	}
 
 	// Create POST request
 	// 创建 POST 请求
